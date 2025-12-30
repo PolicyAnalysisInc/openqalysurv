@@ -23,7 +23,7 @@
 #' @param female_col optional argument to change name of the `female` column accepted by the
 #' first argument.
 #' @param dpy optional argument specifying the number of days per year used in time unit
-#' conversion. This argument will be populated automatically in a heromod model.
+#' conversion. This argument will be populated automatically in an openqaly model.
 #'
 #' @return a `surv_lifetable` object.
 #'
@@ -43,17 +43,17 @@
 #'  )
 #'  y <- data.frame(
 #'      age = c(0, 1, 2, 3),
-#'      male = c('a', 'b', 'c'),
+#'      male = c('a', 'b', 'c', 'd'),
 #'      female = c(0.010, 0.005, 0.004, 0.002)
 #'  )
 #'  z <- data.frame(
 #'      age = c(0, 1, 2, 3),
-#'      male = c('1.1%', '0.5%, '0.3%'),
+#'      male = c('1.1%', '0.5%', '0.3%', '0.2%'),
 #'      female = c(0.010, 0.005, 0.004, 0.002)
 #'  )
 #'  expect_equal(
-#'      define_surv_lifetable(x, 1, 0.45),
-#'      define_surv_lifetable(z, 1, 0.45)
+#'      surv_prob(define_surv_lifetable(x, 1, 0.45), c(0, 1, 2, 3)),
+#'      surv_prob(define_surv_lifetable(z, 1, 0.45), c(0, 1, 2, 3))
 #'  )
 #'  expect_equal(
 #'      define_surv_lifetable(x, 1, 0.45)[-4],
@@ -92,7 +92,7 @@ define_surv_lifetable <- function(x, start_age, percent_male, output_unit = "yea
             stop(err, call. = show_call_error())
     }
 
-    # Truncate vector arguments to handle unintended recycling in heRomod
+    # Truncate vector arguments to handle unintended recycling in openqaly
     if (missing(percent_male)) {
         percent_male <- 1 - truncate_param('percent_female', percent_female)
     } else {

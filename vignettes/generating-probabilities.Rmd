@@ -15,10 +15,10 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, echo = F, message = F}
-library(herosurv)
+library(openqalysurv)
 ```
 
-Any herosurv survival object, or supported third-party distribution object, can be used to generate predicted values
+Any openqalysurv survival object, or supported third-party distribution object, can be used to generate predicted values
 
 ## Survival Probabilities
 

@@ -14,18 +14,18 @@
 #' @return A `surv_join` object
 #' 
 #' @examples
-#' 
-#' dist1 <- define_survival(distribution = "exp", rate = 0.05)
-#' dist2 <- define_survival(distribution = "gompertz", rate = .5, shape = 1)
-#' dist3 <- define_survival(distribution = "exp", rate = 0.25)
+#'
+#' dist1 <- define_surv_param("exp", rate = 0.05)
+#' dist2 <- define_surv_param("gompertz", rate = .5, shape = 1)
+#' dist3 <- define_surv_param("exp", rate = 0.25)
 #' join_dist <- join(dist1, 20, dist2)
 #' join_dist2 <- join(dist1, 20, dist2, 50, dist3)
 #' 
 #' @tests
-#' 
-#' dist1 <- define_survival(distribution = "exp", rate = 0.05)
-#' dist2 <- define_survival(distribution = "gompertz", rate = .5, shape = 1)
-#' dist3 <- define_survival(distribution = "exp", rate = 0.25)
+#'
+#' dist1 <- define_surv_param("exp", rate = 0.05)
+#' dist2 <- define_surv_param("gompertz", rate = .5, shape = 1)
+#' dist3 <- define_surv_param("exp", rate = 0.25)
 #' expect_equal(
 #'  join(dist1, 5, dist2),
 #'  create_list_object(

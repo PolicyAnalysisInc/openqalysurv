@@ -1,4 +1,4 @@
 library(testthat)
-library(herosurv)
+library(openqalysurv)
 
-test_check("herosurv")
+test_check("openqalysurv")

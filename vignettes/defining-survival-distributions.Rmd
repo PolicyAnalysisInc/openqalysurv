@@ -15,10 +15,10 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, echo = F, message = F}
-library(herosurv)
+library(openqalysurv)
 ```
 
-The herosurv package provides functions for defining a wide variety of survival distributions of different types.
+The openqalysurv package provides functions for defining a wide variety of survival distributions of different types.
 
 ## Parametric
 
@@ -95,7 +95,7 @@ The `define_surv_func` function allows you to define a survival distribution bas
 
 ## Third-Party Support
 
-In addition to the functions provided by herosurv, you can use survival distributions created from supported third-party packages.
+In addition to the functions provided by openqalysurv, you can use survival distributions created from supported third-party packages.
 
 ```{r}
   library(survival)

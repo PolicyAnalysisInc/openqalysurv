@@ -15,10 +15,10 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, echo = F, message = F}
-library(herosurv)
+library(openqalysurv)
 ```
 
-Once you've created survival distributions, herosurv provides various methods for combining modifying them.
+Once you've created survival distributions, openqalysurv provides various methods for combining modifying them.
 
 ## Apply Hazard Ratio:
 

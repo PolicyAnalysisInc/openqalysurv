@@ -3,7 +3,7 @@
 ^\.Rproj\.user$
 ^\.circleci$
 ^\.circleci/config\.yml$
-^readme.md
+^README\.Rmd$
 env.RData
 ^codecov\.yml$
 .radian_history

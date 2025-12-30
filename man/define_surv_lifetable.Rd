@@ -39,7 +39,7 @@ first argument.}
 first argument.}
 
 \item{dpy}{optional argument specifying the number of days per year used in time unit
-conversion. This argument will be populated automatically in a heromod model.}
+conversion. This argument will be populated automatically in an openqaly model.}
 
 \item{percent_female}{percent of population that is female. Calculated as 1 - percent_male if not provided.}
 }

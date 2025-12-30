@@ -5,7 +5,6 @@
 #' 
 #' @name surv_prob
 #' @rdname surv_prob
-#' @aliases eval_surv
 #' @export
 #' 
 #' @param x A `surv_dist` object
@@ -25,48 +24,6 @@ surv_prob <- function(x, time, ...) {
 surv_prob.default <- function(x, time, ...) {
     err <- get_and_populate_message('surv_prob_wrong_type')
     stop(err, call. = show_call_error())
-}
-
-
-# Alias functions for backwards compatability with heRomod/heemod
-
-#' @rdname surv_prob
-#' @export
-#' 
-#' @tests
-#' dist1 <- define_surv_param(distribution = "exp", rate = 0.05)
-#' expect_equal(
-#'  surv_prob(dist1, c(1,2,3,4)),
-#'  eval_surv(dist1, c(1,2,3,4))
-#' )
-eval_surv <- function(x, time, ...) {
-    surv_prob(x, time, ...)
-}
-
-# Alias functions for backwards compatability with heRomod/heemod
-# Not exported, mainly just here to enable running of tests
-#' @rdname surv_prob
-#' @export
-#' 
-#' @tests
-#' 
-#' dist1 <- define_surv_param(distribution = "exp", rate = 0.05)
-#' 
-#' expect_equal(
-#'  surv_prob(dist1, seq(from=2,to=10,by=2)),
-#'  compute_surv(dist1, seq_len(5), 2, type = 'surv')
-#' )
-#' 
-#' expect_equal(
-#'  event_prob(dist1, seq(from=2,to=10,by=2)-2, seq(from=2,to=10,by=2)),
-#'  compute_surv(dist1, seq_len(5), 2, type = 'prob')
-#' )
-compute_surv <- function(x, time, cycle_length = 1, type = 'prob', ...) {
-    if (type == 'prob') {
-        event_prob(x, (time - 1) * cycle_length, time * cycle_length, ...)
-    } else {
-        surv_prob(x, time * cycle_length, ...)
-    }
 }
 
 #' Evaluate Event Probabilities

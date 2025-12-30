@@ -2,7 +2,7 @@
 title: "Getting Started"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{herosurv}
+  %\VignetteIndexEntry{openqalysurv}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -15,23 +15,23 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, echo = F, message = F}
-library(herosurv)
+library(openqalysurv)
 ```
 
-The herosurv package makes it easier to perform applied survival modeling in the context of Markov or partitioned survial models. This is accomplished by providing a series functions for defining survival distribution objects as well as a series of S3 methods that can operate on them. These S3 methods also include generics that provide support for survival distributions estimated from supported third-party packages (e.g. survival, flexsurv, flexsurvcure). All survival distribution functions, except those for generating predicted probabilities, return survival distribution objects allowing multiple function calls to be strung together.
+The openqalysurv package makes it easier to perform applied survival modeling in the context of Markov or partitioned survial models. This is accomplished by providing a series functions for defining survival distribution objects as well as a series of S3 methods that can operate on them. These S3 methods also include generics that provide support for survival distributions estimated from supported third-party packages (e.g. survival, flexsurv, flexsurvcure). All survival distribution functions, except those for generating predicted probabilities, return survival distribution objects allowing multiple function calls to be strung together.
 
 ## Defining a Simple Survival Distribution
 
-The herosurv package contains a number of functions for defining survival distributions of various types. For example, the `define_surv_param` function allows you to define a parametric survival distribution of a given family with given parameter values.
+The openqalysurv package contains a number of functions for defining survival distributions of various types. For example, the `define_surv_param` function allows you to define a parametric survival distribution of a given family with given parameter values.
 ```{r}
   dist1 <- define_surv_param('weibull', shape = 1.2, scale = 5.3)
 ```
 
-More information on the kinds of survival distributions supported by herosurv can be found in the "Defining Survival Distributions" vignette.
+More information on the kinds of survival distributions supported by openqalysurv can be found in the "Defining Survival Distributions" vignette.
 
 ## Printing a Survival Distribution
 
-Printing a herosurv survival distribution will provide a description of its contents.
+Printing an openqalysurv survival distribution will provide a description of its contents.
 
 ```{r}
   dist1 <- define_surv_param('exp', rate = 0.013)
@@ -58,7 +58,7 @@ Survival probabilities for a distribution can be graphed using the `plot` method
 
 ## Modifying and Combining Survival Distributions
 
-Survival distributions can be modified using a variety of functions provided by herosurv. For example, the `apply_hr` function can be used to apply a hazard ratio to a survival distribution.
+Survival distributions can be modified using a variety of functions provided by openqalysurv. For example, the `apply_hr` function can be used to apply a hazard ratio to a survival distribution.
 
 ```{r}
   dist1 <- define_surv_param('weibull', shape = 1.2, scale = 5.3)
@@ -77,7 +77,7 @@ It is also possible to combine multiple survival distributions into one. For exa
 
 ## Composing Survival Distributions
 
-More complicated survival distributions can be created by stringing together multiple herosurv operations. Use of the `%>%` operator from magrittr is supported.
+More complicated survival distributions can be created by stringing together multiple openqalysurv operations. Use of the `%>%` operator from magrittr is supported.
 
 ```{r}
 

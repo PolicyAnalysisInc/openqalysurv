@@ -6,7 +6,6 @@
 #' 
 #' @name define_surv_param
 #' @export
-#' @aliases define_survival
 #' @rdname define_surv_param
 #' 
 #' @param distribution a parametric survival distribution.
@@ -55,12 +54,9 @@
 #' 
 #' 
 #' @examples
-#' 
+#'
 #' define_surv_param(distribution = "exp", rate = .5)
 #' define_surv_param(distribution = "gompertz", rate = .5, shape = 1)
-#' 
-#' # Deprecated alias included for backwards compatability with heRomod
-#' define_survival(distribution = "exp", rate = 0.05)
 #' 
 define_surv_param <- function(distribution, ...) {
 
@@ -235,17 +231,6 @@ get_dist_display_name <- function(name) {
     }
 
     flexsurv_dist_aliases[[name]]
-}
-
-#' @export
-#' @rdname define_surv_param
-#' @tests
-#' expect_equal(
-#'  define_surv_param('lnorm', meanlog = 2.1, sdlog = 0.3),
-#'  define_survival('lnorm', meanlog = 2.1, sdlog = 0.3)  
-#' )
-define_survival <- function(distribution, ...) {
-    define_surv_param(distribution, ...)
 }
 
 #' @tests

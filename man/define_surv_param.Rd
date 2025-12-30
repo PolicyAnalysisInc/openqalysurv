@@ -2,12 +2,9 @@
 % Please edit documentation in R/surv_parametric.r
 \name{define_surv_param}
 \alias{define_surv_param}
-\alias{define_survival}
 \title{Define Parametric Distribution}
 \usage{
 define_surv_param(distribution, ...)
-
-define_survival(distribution, ...)
 }
 \arguments{
 \item{distribution}{a parametric survival distribution.}
@@ -43,9 +40,6 @@ Supported distributions are listed in the table below.\tabular{llll}{
 
 define_surv_param(distribution = "exp", rate = .5)
 define_surv_param(distribution = "gompertz", rate = .5, shape = 1)
-
-# Deprecated alias included for backwards compatability with heRomod
-define_survival(distribution = "exp", rate = 0.05)
 
 }
 \references{

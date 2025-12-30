@@ -16,7 +16,7 @@ jobs:
             command: |
               mkdir -p ~/R/Library
               Rscript -e 'install.packages("devtools", repos = "https://cran.case.edu")'
-              Rscript -e 'devtools::install_github("PolicyAnalysisInc/herotools")'
+              Rscript -e 'devtools::install_github("PolicyAnalysisInc/openqalytools")'
               Rscript -e 'install.packages("remotes", repos = "https://cran.case.edu")'
               Rscript -e 'remotes::install_deps(dependencies = TRUE, repos = "https://cran.case.edu")'
         - run:
@@ -33,7 +33,7 @@ jobs:
             no_output_timeout: 35m
             command: R CMD check --as-cran --no-manual *tar.gz
         - store_artifacts:
-            path: heRomod.Rcheck/
+            path: openqalysurv.Rcheck/
         - save_cache:
             key: r-pkg-cache-{{ arch }}-{{ .Branch }}
             paths:
@@ -54,7 +54,7 @@ jobs:
           command: |
             mkdir -p ~/R/Library
             Rscript -e 'install.packages("devtools", repos = "https://cran.case.edu")'
-            Rscript -e 'devtools::install_github("PolicyAnalysisInc/herotools")'
+            Rscript -e 'devtools::install_github("PolicyAnalysisInc/openqalytools")'
             Rscript -e 'install.packages("remotes", repos = "https://cran.case.edu")'
             Rscript -e 'remotes::install_deps(dependencies = TRUE, repos = "https://cran.case.edu")'
       - run:

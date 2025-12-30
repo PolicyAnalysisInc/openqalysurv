@@ -44,7 +44,7 @@
 #' models. Biometrika 62(3):607-614.
 #' 
 #' @examples
-#' 
+#'
 #' define_surv_cure(distribution = "exp", theta = 0.34, rate = .5)
 #' define_surv_cure(
 #'  distribution = "weibull",
@@ -52,8 +52,6 @@
 #'  scale = 34.43,
 #'  mixture = TRUE
 #' )
-#' # Deprecated alias included for backwards compatability with heRomod
-#' define_survival_cure(distribution = "exp", theta = 0.24, rate = 0.023)
 #' 
 define_surv_cure <- function(distribution, theta, ..., mixture = TRUE) {
 
@@ -152,18 +150,6 @@ surv_prob.surv_cure <- function(x, time, ...) {
     ret <- do.call(generic_cure_func, arg_list)
 
     ret
-}
-
-#' @rdname define_surv_cure
-#' @export
-#' 
-#' @tests
-#' expect_equal(
-#'  define_surv_cure('weibull', theta = 0.41, shape = 1.04, scale = 10.2),
-#'  define_survival_cure('weibull', theta = 0.41, shape = 1.04, scale = 10.2)
-#' )
-define_survival_cure <- function(distribution, theta, ..., mixture = TRUE) {
-    define_surv_cure(distribution, theta, ..., mixture = mixture)
 }
 
 #' @tests

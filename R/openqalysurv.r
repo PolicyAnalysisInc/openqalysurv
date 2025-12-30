@@ -13,21 +13,21 @@
 #' @importFrom msm ppexp
 #' @import flexsurv
 #' @import survival
-#' @import herotools
+#' @import openqalytools
 NULL
 
 #' @tests
 #' options(
 #'  list(
-#'      herosurv.show_call_signature_in_errors = NULL,
-#'      herosurv.show_call_signature_in_warnings = NULL
+#'      openqalysurv.show_call_signature_in_errors = NULL,
+#'      openqalysurv.show_call_signature_in_warnings = NULL
 #'  )
 #' )
 #' .onLoad()
 #' expect_equal(
 #'  c(
-#'      'herosurv.show_call_signature_in_errors',
-#'      'herosurv.show_call_signature_in_warnings'
+#'      'openqalysurv.show_call_signature_in_errors',
+#'      'openqalysurv.show_call_signature_in_warnings'
 #'  ) %in% names(options()),
 #'  c(TRUE, TRUE)
 #' )

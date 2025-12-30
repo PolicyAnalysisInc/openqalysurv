@@ -86,8 +86,8 @@ flexsurv_spline_scale_aliases <- list(
 
 # Default values for options
 default_options <- list(
-    herosurv.show_call_signature_in_errors = FALSE,
-    herosurv.show_call_signature_in_warnings = FALSE
+    openqalysurv.show_call_signature_in_errors = FALSE,
+    openqalysurv.show_call_signature_in_warnings = FALSE
 )
 
 # Use 'an' instead of 'a' when a word starts with one of

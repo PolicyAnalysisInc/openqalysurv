@@ -2,12 +2,9 @@
 % Please edit documentation in R/surv_cure.r
 \name{define_surv_cure}
 \alias{define_surv_cure}
-\alias{define_survival_cure}
 \title{Define Parametric Mixture or Non-Mixture Cure Distribution}
 \usage{
 define_surv_cure(distribution, theta, ..., mixture = TRUE)
-
-define_survival_cure(distribution, theta, ..., mixture = TRUE)
 }
 \arguments{
 \item{distribution}{A parametric survival distribution. See
@@ -53,8 +50,6 @@ define_surv_cure(
  scale = 34.43,
  mixture = TRUE
 )
-# Deprecated alias included for backwards compatability with heRomod
-define_survival_cure(distribution = "exp", theta = 0.24, rate = 0.023)
 
 }
 \references{

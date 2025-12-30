@@ -68,13 +68,13 @@ truncate_param <- function(name, values) {
 }
 
 show_call_error <- function() {
-    nm <- 'herosurv.show_call_signature_in_errors'
-    getOption(nm, default = default_options[[nm]]) 
+    nm <- 'openqalysurv.show_call_signature_in_errors'
+    getOption(nm, default = default_options[[nm]])
 }
 
 show_call_warn <- function() {
-    nm <- 'herosurv.show_call_signature_in_errors'
-    getOption(nm, default = default_options[[nm]]) 
+    nm <- 'openqalysurv.show_call_signature_in_errors'
+    getOption(nm, default = default_options[[nm]])
 }
 
 #' @tests
@@ -139,7 +139,7 @@ check_times <- function(time, context, time_name) {
 #'  c('45%', '1%', '0.3434%', 'dffdf')
 #' )
 #' expect_equal(
-#'  parse_percent_string_to_number(x(1, 2, 3)),
+#'  parse_percent_string_to_number(c(1, 2, 3)),
 #'  c(1, 2, 3)
 #' )
 parse_percent_string_to_number <- function(x) {
