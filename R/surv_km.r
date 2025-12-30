@@ -78,6 +78,69 @@
 #'  fixed = TRUE,
 #'  'Error defining KM, values in column "p_surv" must be within the interval [0-1].'
 #' )
+#'
+#' # Test missing only one column (time_col)
+#' expect_error(
+#'  define_surv_km(data.frame(survival = c(1, 0.5))),
+#'  'Error defining KM, the following columns were expected but not found: "time".',
+#'  fixed = TRUE
+#' )
+#'
+#' # Test missing only one column (surv_col)
+#' expect_error(
+#'  define_surv_km(data.frame(time = c(0, 1))),
+#'  'Error defining KM, the following columns were expected but not found: "survival".',
+#'  fixed = TRUE
+#' )
+#'
+#' # Test NA in time_col only
+#' expect_error(
+#'  define_surv_km(data.frame(time = c(0, NA, 5), survival = c(1, 0.9, 0.5))),
+#'  'Error defining KM, the following columns contained missing values: "time".',
+#'  fixed = TRUE
+#' )
+#'
+#' # Test NA in both columns
+#' expect_error(
+#'  define_surv_km(data.frame(time = c(0, NA, 5), survival = c(1, NA, 0.5))),
+#'  'Error defining KM, the following columns contained missing values: "time", "survival".',
+#'  fixed = TRUE
+#' )
+#'
+#' # Test invalid type in time_col only
+#' expect_error(
+#'  define_surv_km(data.frame(time = c("a", "b", "c"), survival = c(1, 0.9, 0.5))),
+#'  'Error defining KM, the following columns were of invalid type: "time".',
+#'  fixed = TRUE
+#' )
+#'
+#' # Test invalid type in both columns
+#' expect_error(
+#'  define_surv_km(data.frame(time = c("a", "b"), survival = c("x", "y"))),
+#'  'Error defining KM, the following columns were of invalid type: "time", "survival".',
+#'  fixed = TRUE
+#' )
+#'
+#' # Test probability < 0
+#' expect_error(
+#'  define_surv_km(data.frame(time = c(0, 1, 5), survival = c(1, 0.5, -0.1))),
+#'  'Error defining KM, values in column "survival" must be within the interval [0-1].',
+#'  fixed = TRUE
+#' )
+#'
+#' # Test time starts at 0 but survival != 1
+#' expect_error(
+#'  define_surv_km(data.frame(time = c(0, 1, 5), survival = c(0.9, 0.7, 0.5))),
+#'  'Error defining KM, column "time" must start with a value 0 and "survival" must start with a value 1.',
+#'  fixed = TRUE
+#' )
+#'
+#' # Test survival starts at 1 but time != 0
+#' expect_error(
+#'  define_surv_km(data.frame(time = c(1, 2, 5), survival = c(1, 0.7, 0.5))),
+#'  'Error defining KM, column "time" must start with a value 0 and "survival" must start with a value 1.',
+#'  fixed = TRUE
+#' )
 define_surv_km <- function(x, time_col = 'time', surv_col = 'survival') {
 
     # Check for required column names
@@ -197,8 +260,7 @@ print.surv_km <- function(x, ...) {
 }
 
 #' @export
-#' @rdname define_surv_km
-#' 
+#'
 #' @tests
 #' df <- data.frame(
 #'      time = c(0, 1, 5, 10),
@@ -263,6 +325,15 @@ surv_prob.surv_km <- function(x, time, ...) {
 }
 
 #' @export
+#'
+#' @tests
+#' df <- data.frame(
+#'      time = c(0, 1, 5, 10),
+#'      survival = c(1, 0.9, 0.7, 0.5)
+#' )
+#' dist <- define_surv_km(df)
+#' p <- plot(dist, max_time = 10)
+#' expect_s3_class(p, "ggplot")
 plot.surv_km <- function(x, max_time, steps = 1000, ...) {
     df <- x$table
     ggplot(aes(x = time, y = survival), data = df) +

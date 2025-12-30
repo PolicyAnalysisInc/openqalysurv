@@ -2,10 +2,129 @@
 
 # File R/surv_km.r: @tests
 
-c("test_that(\"Function define_surv_km() @ L81\", {\n  df <- data.frame(\n       month = c(0, 1, 5, 10),\n       p_surv = c(1, 0.9, 0.7, 0.5)\n  )\n  df2 <- data.frame(\n       month = c(0, 1, 5, 10),\n       p_surv = c('100%', '90%', '70%', '50%')\n  )\n  dist1 <- define_surv_km(df, 'month', 'p_surv')\n  dist2 <- define_surv_km(df[c(4,1,3,2), ], 'month', 'p_surv')\n  dist3 <- define_surv_km(mutate(df, time = month, survival = p_surv))\n  dist4 <- define_surv_km(df2, 'month', 'p_surv')\n  expect_equal(dist1, dist2)\n  expect_equal(dist1, dist3)\n  expect_equal(dist1, dist4)\n  \n  expect_error(\n   define_surv_km(data.frame()),\n   'Error defining KM, the following columns were expected but not found: \"time\", \"survival\".',\n    fixed = TRUE\n  )\n  expect_error(\n   define_surv_km(\n       mutate(df, p_surv = c(1, 0.9, 0.7, 0.9)), 'month', 'p_surv'\n   ),\n   'Error defining KM, column \"p_surv\" may not be increasing with respect to \"month\".',\n    fixed = TRUE\n  )\n  expect_error(\n   define_surv_km(\n       mutate(df, month = c(0, 1, 1, 10)), 'month', 'p_surv'\n   ),\n   'Error defining KM, column \"month\" contained duplicate values.',\n   fixed = TRUE\n  )\n  expect_error(\n   define_surv_km(df[-1, ], 'month', 'p_surv'),\n   fixed = TRUE,\n   'Error defining KM, column \"month\" must start with a value 0 and \"p_surv\" must start with a value 1.'\n  )\n  expect_error(\n   define_surv_km(mutate(df, p_surv = NA), 'month', 'p_surv'),\n   fixed = TRUE,\n   'Error defining KM, the following columns contained missing values: \"p_surv\".'\n  )\n  expect_error(\n   define_surv_km(mutate(df, p_surv = \"foo\"), 'month', 'p_surv'),\n   fixed = TRUE,\n   'Error defining KM, the following columns were of invalid type: \"p_surv\".'\n  )\n  expect_error(\n   define_surv_km(mutate(df, p_surv = 1.2), 'month', 'p_surv'),\n   fixed = TRUE,\n   'Error defining KM, values in column \"p_surv\" must be within the interval [0-1].'\n  )\n})\n", 
-"test_that(\"Function define_surv_km() @ L81\", {\n  df <- data.frame(\n       time = c(0, 1, 5, 10),\n       survival = c(1, 0.9, 0.7, 0.5)\n  )\n  dist1 <- define_surv_table(df)\n  dist2 <- define_surv_km(df)\n  expect_equal(dist1, dist2)\n})\n")
+test_that("Function define_surv_km() @ L144", {
+  df <- data.frame(
+       month = c(0, 1, 5, 10),
+       p_surv = c(1, 0.9, 0.7, 0.5)
+  )
+  df2 <- data.frame(
+       month = c(0, 1, 5, 10),
+       p_surv = c('100%', '90%', '70%', '50%')
+  )
+  dist1 <- define_surv_km(df, 'month', 'p_surv')
+  dist2 <- define_surv_km(df[c(4,1,3,2), ], 'month', 'p_surv')
+  dist3 <- define_surv_km(mutate(df, time = month, survival = p_surv))
+  dist4 <- define_surv_km(df2, 'month', 'p_surv')
+  expect_equal(dist1, dist2)
+  expect_equal(dist1, dist3)
+  expect_equal(dist1, dist4)
+  
+  expect_error(
+   define_surv_km(data.frame()),
+   'Error defining KM, the following columns were expected but not found: "time", "survival".',
+    fixed = TRUE
+  )
+  expect_error(
+   define_surv_km(
+       mutate(df, p_surv = c(1, 0.9, 0.7, 0.9)), 'month', 'p_surv'
+   ),
+   'Error defining KM, column "p_surv" may not be increasing with respect to "month".',
+    fixed = TRUE
+  )
+  expect_error(
+   define_surv_km(
+       mutate(df, month = c(0, 1, 1, 10)), 'month', 'p_surv'
+   ),
+   'Error defining KM, column "month" contained duplicate values.',
+   fixed = TRUE
+  )
+  expect_error(
+   define_surv_km(df[-1, ], 'month', 'p_surv'),
+   fixed = TRUE,
+   'Error defining KM, column "month" must start with a value 0 and "p_surv" must start with a value 1.'
+  )
+  expect_error(
+   define_surv_km(mutate(df, p_surv = NA), 'month', 'p_surv'),
+   fixed = TRUE,
+   'Error defining KM, the following columns contained missing values: "p_surv".'
+  )
+  expect_error(
+   define_surv_km(mutate(df, p_surv = "foo"), 'month', 'p_surv'),
+   fixed = TRUE,
+   'Error defining KM, the following columns were of invalid type: "p_surv".'
+  )
+  expect_error(
+   define_surv_km(mutate(df, p_surv = 1.2), 'month', 'p_surv'),
+   fixed = TRUE,
+   'Error defining KM, values in column "p_surv" must be within the interval [0-1].'
+  )
+  
+  # Test missing only one column (time_col)
+  expect_error(
+   define_surv_km(data.frame(survival = c(1, 0.5))),
+   'Error defining KM, the following columns were expected but not found: "time".',
+   fixed = TRUE
+  )
+  
+  # Test missing only one column (surv_col)
+  expect_error(
+   define_surv_km(data.frame(time = c(0, 1))),
+   'Error defining KM, the following columns were expected but not found: "survival".',
+   fixed = TRUE
+  )
+  
+  # Test NA in time_col only
+  expect_error(
+   define_surv_km(data.frame(time = c(0, NA, 5), survival = c(1, 0.9, 0.5))),
+   'Error defining KM, the following columns contained missing values: "time".',
+   fixed = TRUE
+  )
+  
+  # Test NA in both columns
+  expect_error(
+   define_surv_km(data.frame(time = c(0, NA, 5), survival = c(1, NA, 0.5))),
+   'Error defining KM, the following columns contained missing values: "time", "survival".',
+   fixed = TRUE
+  )
+  
+  # Test invalid type in time_col only
+  expect_error(
+   define_surv_km(data.frame(time = c("a", "b", "c"), survival = c(1, 0.9, 0.5))),
+   'Error defining KM, the following columns were of invalid type: "time".',
+   fixed = TRUE
+  )
+  
+  # Test invalid type in both columns
+  expect_error(
+   define_surv_km(data.frame(time = c("a", "b"), survival = c("x", "y"))),
+   'Error defining KM, the following columns were of invalid type: "time", "survival".',
+   fixed = TRUE
+  )
+  
+  # Test probability < 0
+  expect_error(
+   define_surv_km(data.frame(time = c(0, 1, 5), survival = c(1, 0.5, -0.1))),
+   'Error defining KM, values in column "survival" must be within the interval [0-1].',
+   fixed = TRUE
+  )
+  
+  # Test time starts at 0 but survival != 1
+  expect_error(
+   define_surv_km(data.frame(time = c(0, 1, 5), survival = c(0.9, 0.7, 0.5))),
+   'Error defining KM, column "time" must start with a value 0 and "survival" must start with a value 1.',
+   fixed = TRUE
+  )
+  
+  # Test survival starts at 1 but time != 0
+  expect_error(
+   define_surv_km(data.frame(time = c(1, 2, 5), survival = c(1, 0.7, 0.5))),
+   'Error defining KM, column "time" must start with a value 0 and "survival" must start with a value 1.',
+   fixed = TRUE
+  )
+})
 
-test_that("Function print.surv_km() @ L194", {
+
+test_that("Function print.surv_km() @ L257", {
   df <- data.frame(
        month = c(0, 1, 5, 10),
        p_surv = c(1, 0.9, 0.7, 0.5)
@@ -19,7 +138,18 @@ test_that("Function print.surv_km() @ L194", {
 })
 
 
-test_that("Function surv_prob.surv_km() @ L236", {
+test_that("Function define_surv_table() @ L272", {
+  df <- data.frame(
+       time = c(0, 1, 5, 10),
+       survival = c(1, 0.9, 0.7, 0.5)
+  )
+  dist1 <- define_surv_table(df)
+  dist2 <- define_surv_km(df)
+  expect_equal(dist1, dist2)
+})
+
+
+test_that("Function surv_prob.surv_km() @ L298", {
   df <- data.frame(
        time = c(0, 1, 5, 10),
        survival = c(1, 0.9, 0.7, 0.5)
@@ -38,5 +168,16 @@ test_that("Function surv_prob.surv_km() @ L236", {
    surv_prob(dist2, c(0, 0.99, 1, 1.01, 4.99, 5, 5.01, 11)),
    c(1, 1, 0.9, 0.9, 0.9, 0.7, 0.7, 0)
   )
+})
+
+
+test_that("Function plot.surv_km() @ L337", {
+  df <- data.frame(
+       time = c(0, 1, 5, 10),
+       survival = c(1, 0.9, 0.7, 0.5)
+  )
+  dist <- define_surv_km(df)
+  p <- plot(dist, max_time = 10)
+  expect_s3_class(p, "ggplot")
 })
 
