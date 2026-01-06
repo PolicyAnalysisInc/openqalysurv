@@ -32,7 +32,8 @@ Imports:
     rlang,
     magrittr,
     ggplot2,
-    openqalytools
+    openqalytools,
+    Rcpp
 Suggests: 
     testthat (>= 3.0.0),
     roxytest,
@@ -41,3 +42,5 @@ Suggests:
     rmarkdown
 Config/testthat/edition: 3
 VignetteBuilder: knitr
+LinkingTo: 
+    Rcpp
