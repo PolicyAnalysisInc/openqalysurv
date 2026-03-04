@@ -13,3 +13,4 @@ env.RData
 ^docs$
 ^pkgdown$
 ^\.github$
+^scratch$

@@ -12,7 +12,39 @@
 #' @param ... Additional cutpoints and distributions
 #'   
 #' @return A `surv_join` object
-#' 
+#'
+#' @details
+#' \code{join} ensures the overall survival curve is continuous at each cut
+#' point by rescaling the next distribution's survival values. For a single
+#' cut point \eqn{c} joining distributions \eqn{S_1} and \eqn{S_2}, the
+#' joined survival function is:
+#'
+#' \deqn{S(t) = \begin{cases} S_1(t) & t \le c \\ \frac{S_1(c)}{S_2(c)}
+#' \cdot S_2(t) & t > c \end{cases}}{S(t) = S_1(t) for t <= c;
+#' S(t) = [S_1(c) / S_2(c)] * S_2(t) for t > c}
+#'
+#' Importantly, the second distribution is evaluated at absolute time
+#' \eqn{t}, not at \eqn{t - c}. This means \code{join} only rescales
+#' survival probabilities for continuity — it does not shift or remap the
+#' timescale of any distribution.
+#'
+#' All distributions passed to \code{join} must therefore share the same
+#' time origin (typically time zero = study baseline). If a distribution was
+#' estimated from data that begins at the cut point — so that its own
+#' time zero corresponds to the cut point — it must first be shifted with
+#' \code{\link{apply_shift}} to realign the timescales:
+#'
+#' \preformatted{
+#' # dist_from_cutpoint was fit to data starting at t = c
+#' # (its time zero = the cut point)
+#' shifted <- apply_shift(dist_from_cutpoint, c)
+#' joined  <- join(km, c, shifted)
+#' }
+#'
+#' Without the shift, \code{join} would evaluate the distribution at
+#' absolute time \eqn{t} instead of the intended \eqn{t - c}, producing
+#' incorrect survival estimates beyond the cut point.
+#'
 #' @examples
 #'
 #' dist1 <- define_surv_param("exp", rate = 0.05)

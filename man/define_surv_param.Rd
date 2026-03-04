@@ -7,48 +7,22 @@
 define_surv_param(distribution, ...)
 }
 \arguments{
-\item{distribution}{a parametric survival distribution.}
+\item{distribution}{a parametric survival distribution
+(see \code{\link[=define_surv_flexsurv]{define_surv_flexsurv()}} for supported distributions).}
 
-\item{...}{additional distribution parameters
-(see details section below)}
+\item{...}{distribution parameters
+(see \code{\link[=define_surv_flexsurv]{define_surv_flexsurv()}} for details).}
 }
 \value{
 a \code{surv_parametric} object.
 }
 \description{
-Define parametric survival distribution with given
-parameter values. A complete listing of supported
-distributions is provided in the details section.
-}
-\details{
-Supported distributions are listed in the table below.\tabular{llll}{
-   \strong{Distribution} \tab \strong{Description} \tab \strong{Parameters} \tab \strong{Notes} \cr
-   "exp" \tab Exponential \tab rate \tab  \cr
-   "lnorm" \tab Lognormal \tab meanlog, sdlog \tab  \cr
-   "llogis" \tab Log-Logistic \tab shape, scale \tab  \cr
-   "weibull" \tab Weibull (AFT) \tab shape, scale \tab  \cr
-   "weibullPH" \tab Weibull (PH) \tab shape, scale \tab  \cr
-   "gompertz" \tab Gompertz \tab shape, rate \tab  \cr
-   "gamma" \tab Gamma \tab shape, scale \tab  \cr
-   "gengamma" \tab Generalized Gamma (stable) \tab mu, sigma, Q \tab Described in Prentice (1974) \cr
-   "gengamma.orig" \tab Generalized Gamma (original) \tab shape, scale, k \tab Described in Stacy (1962) \cr
-   "genf" \tab Generalized F (stable) \tab mu, sigma, Q, P \tab Described in Prentice (1975) \cr
-   "genf.org" \tab Generalized F (original) \tab mu, sigma, s1, s2 \tab Described in Prentice (1975) \cr
-}
+Alias for \code{\link[=define_surv_flexsurv]{define_surv_flexsurv()}}. Define a parametric survival
+distribution using flexsurv's native parameterization.
 }
 \examples{
 
 define_surv_param(distribution = "exp", rate = .5)
 define_surv_param(distribution = "gompertz", rate = .5, shape = 1)
 
-}
-\references{
-Stacy, E. W. (1962). A generalization of the gamma
-distribution.  Annals of Mathematical Statistics 33:1187-92.
-
-Prentice, R. L. (1974). A log gamma model and its maximum likelihood
-estimation. Biometrika 61(3):539-544.
-
-R. L. Prentice (1975). Discrimination among some parametric
-models. Biometrika 62(3):607-614.
 }

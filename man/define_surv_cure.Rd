@@ -10,7 +10,9 @@ define_surv_cure(distribution, theta, ..., mixture = TRUE)
 \item{distribution}{A parametric survival distribution. See
 details for a listing of valid distributions.}
 
-\item{theta}{A numeric value representing cure fraction}
+\item{theta}{A numeric value in [0, 1] representing the cure
+fraction, i.e. the long-term probability of never experiencing
+the event.}
 
 \item{...}{Additional distribution parameters
 (see details section below)}
@@ -22,11 +24,24 @@ or non-mixture model is being defined.}
 a \code{surv_dist_cure} object.
 }
 \description{
-Define parametric mixture or not mixture cure distribution
-with given parameter values.
+Define a parametric mixture or non-mixture cure distribution
+with given parameter values. Uses the \code{flexsurvcure} package
+(\link[flexsurvcure:mixsurv]{flexsurvcure::pmixsurv}/\link[flexsurvcure:nmixsurv]{flexsurvcure::pnmixsurv}) for evaluation.
 }
 \details{
-Supported distributions are listed in the table below.\tabular{llll}{
+\strong{Mixture cure model} (\code{mixture = TRUE}):
+\deqn{S(t) = \theta + (1 - \theta) \, S_u(t)}
+
+\strong{Non-mixture cure model} (\code{mixture = FALSE}):
+\deqn{S(t) = \theta^{F_u(t)}}
+
+where \eqn{\theta} is the cure fraction (long-term survival
+probability), \eqn{S_u(t)} is the survival function for the
+uncured subgroup, and \eqn{F_u(t) = 1 - S_u(t)} is the
+corresponding CDF.
+
+Supported distributions for the uncured subgroup are listed in
+the table below.\tabular{llll}{
    \strong{Distribution} \tab \strong{Description} \tab \strong{Parameters} \tab \strong{Notes} \cr
    "exp" \tab Exponential \tab rate \tab  \cr
    "lnorm" \tab Lognormal \tab meanlog, sdlog \tab  \cr
@@ -38,7 +53,7 @@ Supported distributions are listed in the table below.\tabular{llll}{
    "gengamma" \tab Generalized Gamma (stable) \tab mu, sigma, Q \tab Parameterization from Prentice (1974) \cr
    "gengamma.orig" \tab Generalized Gamma (original) \tab shape, scale, k \tab Original parameterization from Stacy (1962) \cr
    "genf" \tab Generalized F (stable) \tab mu, sigma, Q, P \tab Stable reparameterization from Prentice (1975) \cr
-   "genf.org" \tab Generalized F (original) \tab mu, sigma, s1, s2 \tab Origninal parameterization described by Prentice (1975) \cr
+   "genf.orig" \tab Generalized F (original) \tab mu, sigma, s1, s2 \tab Original parameterization described by Prentice (1975) \cr
 }
 }
 \examples{
@@ -53,6 +68,9 @@ define_surv_cure(
 
 }
 \references{
+Lambert, P.C. (2007). Modeling of the cure fraction
+in survival studies. The Stata Journal, 7(3), 351-375.
+
 Stacy, E. W. (1962). A generalization of the gamma
 distribution.  Annals of Mathematical Statistics 33:1187-92.
 

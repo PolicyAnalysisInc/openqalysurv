@@ -2,7 +2,7 @@
 
 # File R/join.r: @tests
 
-test_that("Function join() @ L75", {
+test_that("Function join() @ L107", {
   dist1 <- define_surv_param("exp", rate = 0.05)
   dist2 <- define_surv_param("gompertz", rate = .5, shape = 1)
   dist3 <- define_surv_param("exp", rate = 0.25)
@@ -55,7 +55,7 @@ test_that("Function join() @ L75", {
 })
 
 
-test_that("Function surv_prob.surv_join() @ L182", {
+test_that("Function surv_prob.surv_join() @ L214", {
   dist1 <- define_surv_param('exp', rate = 0.05)
   dist2 <- define_surv_param('exp', rate = 0.1)
   dist3 <- define_surv_param('exp', rate = 0.2)
@@ -92,7 +92,7 @@ test_that("Function surv_prob.surv_join() @ L182", {
 })
 
 
-test_that("Function print.surv_join() @ L216", {
+test_that("Function print.surv_join() @ L248", {
   dist1 <- define_surv_param('exp', rate = 0.05)
   dist2 <- define_surv_param('exp', rate = 0.1)
   expect_output(

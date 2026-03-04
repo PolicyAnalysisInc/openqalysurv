@@ -61,7 +61,16 @@ messages <- list(
     check_time_wrong_class = 'Error {context}, "{time_name}" must be numeric.',
     check_time_negative = 'Error {context}, "{time_name}" cannot be negative.',
     check_time_missing = 'Error {context}, "{time_name}" cannot be NA.',
-    lifetable_mortality_wrong_type = 'Error defining life-table, death rates must be numeric.'
+    lifetable_mortality_wrong_type = 'Error defining life-table, death rates must be numeric.',
+    fp_betas_wrong_type = 'Error defining fractional polynomial distribution, "betas" must be numeric.',
+    fp_powers_wrong_type = 'Error defining fractional polynomial distribution, "powers" must be numeric.',
+    fp_betas_missing = 'Error defining fractional polynomial distribution, "betas" cannot contain NA values.',
+    fp_powers_missing = 'Error defining fractional polynomial distribution, "powers" cannot contain NA values.',
+    fp_length_mismatch = 'Error defining fractional polynomial distribution, "betas" must have length equal to length of "powers" plus one.',
+    fp_min_powers = 'Error defining fractional polynomial distribution, must specify at least one power.',
+    invalid_source_dist = 'Error defining {source} {dist} distribution, "{dist}" is not a supported distribution for {source}.',
+    missing_source_params = 'Error defining {source} {dist} distribution, required parameters missing: {params}.',
+    invalid_source_param = 'Error defining {source} {dist} distribution, parameter "{param}" must be a single non-NA numeric value.'
 )
 
 # Possible values for distribution argument to flexsurvreg
@@ -100,3 +109,162 @@ default_options <- list(
 # Use 'an' instead of 'a' when a word starts with one of
 # these letters
 word_start_vowels <- c('a','e','i','o','u')
+
+# ============================================================================
+# Software-specific distribution mappings
+# ============================================================================
+
+# survreg (R survival package) -> flexsurv distribution names
+survreg_dists <- c(
+    exponential = "exp",
+    weibull = "weibull",
+    lognormal = "lnorm",
+    loglogistic = "llogis"
+)
+
+# SAS PROC LIFEREG -> flexsurv distribution names
+lifereg_dists <- c(
+    exponential = "exp",
+    weibull = "weibull",
+    lnormal = "lnorm",
+    llogistic = "llogis",
+    gamma = "gengamma"
+)
+
+# Stata streg AFT metric -> flexsurv distribution names
+streg_aft_dists <- c(
+    exponential = "exp",
+    weibull = "weibull",
+    lognormal = "lnorm",
+    loglogistic = "llogis",
+    ggamma = "gengamma"
+)
+
+# Stata streg PH metric -> flexsurv distribution names
+streg_ph_dists <- c(
+    exponential = "exp",
+    weibull = "weibullPH",
+    gompertz = "gompertz"
+)
+
+# ============================================================================
+# Expected parameter names per software/distribution
+# ============================================================================
+
+survreg_dist_params <- list(
+    exponential = "intercept",
+    weibull = c("intercept", "scale"),
+    lognormal = c("intercept", "scale"),
+    loglogistic = c("intercept", "scale")
+)
+
+lifereg_dist_params <- list(
+    exponential = "intercept",
+    weibull = c("intercept", "scale"),
+    lnormal = c("intercept", "scale"),
+    llogistic = c("intercept", "scale"),
+    gamma = c("intercept", "scale", "shape")
+)
+
+streg_aft_dist_params <- list(
+    exponential = "cons",
+    weibull = c("cons", "ln_p"),
+    lognormal = c("cons", "sigma"),
+    loglogistic = c("cons", "gamma"),
+    ggamma = c("cons", "sigma", "kappa")
+)
+
+streg_ph_dist_params <- list(
+    exponential = "cons",
+    weibull = c("cons", "ln_p"),
+    gompertz = c("cons", "gamma")
+)
+
+# ============================================================================
+# Shared helpers for software-specific distribution functions
+# ============================================================================
+
+#' @tests
+#' expect_equal(match_dist_name("Weibull", survreg_dists, "survreg"), "weibull")
+#' expect_equal(match_dist_name("EXPONENTIAL", survreg_dists, "survreg"), "exponential")
+#' expect_error(
+#'  match_dist_name("gamma", survreg_dists, "survreg"),
+#'  'is not a supported distribution',
+#'  fixed = TRUE
+#' )
+match_dist_name <- function(distribution, valid_dists, source) {
+    dist_lower <- tolower(distribution)
+    matched <- tryCatch(
+        match.arg(dist_lower, choices = names(valid_dists)),
+        error = function(e) {
+            err <- get_and_populate_message(
+                'invalid_source_dist',
+                source = source,
+                dist = distribution
+            )
+            stop(err, call. = show_call_error())
+        }
+    )
+    matched
+}
+
+#' @tests
+#' expect_silent(
+#'  check_source_params(
+#'      list(intercept = 3, scale = 0.8),
+#'      c("intercept", "scale"),
+#'      "survreg",
+#'      "weibull"
+#'  )
+#' )
+#' expect_error(
+#'  check_source_params(
+#'      list(intercept = 3),
+#'      c("intercept", "scale"),
+#'      "survreg",
+#'      "weibull"
+#'  ),
+#'  'required parameters missing',
+#'  fixed = TRUE
+#' )
+check_source_params <- function(args, required, source, dist) {
+    missing_params <- required[!required %in% names(args)]
+    if (length(missing_params) > 0) {
+        err <- get_and_populate_message(
+            'missing_source_params',
+            source = source,
+            dist = dist,
+            params = quoted_list_string(missing_params)
+        )
+        stop(err, call. = show_call_error())
+    }
+}
+
+#' @tests
+#' expect_silent(check_numeric_param(3.5, "intercept", "survreg", "weibull"))
+#' expect_error(
+#'  check_numeric_param("a", "intercept", "survreg", "weibull"),
+#'  'must be a single non-NA numeric value',
+#'  fixed = TRUE
+#' )
+#' expect_error(
+#'  check_numeric_param(NA, "intercept", "survreg", "weibull"),
+#'  'must be a single non-NA numeric value',
+#'  fixed = TRUE
+#' )
+#' expect_error(
+#'  check_numeric_param(c(1, 2), "intercept", "survreg", "weibull"),
+#'  'must be a single non-NA numeric value',
+#'  fixed = TRUE
+#' )
+check_numeric_param <- function(value, name, source, dist) {
+    if (!is.numeric(value) || length(value) != 1 || is.na(value)) {
+        err <- get_and_populate_message(
+            'invalid_source_param',
+            source = source,
+            dist = dist,
+            param = name
+        )
+        stop(err, call. = show_call_error())
+    }
+}

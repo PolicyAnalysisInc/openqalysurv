@@ -9,8 +9,9 @@ apply_shift(dist, shift)
 \arguments{
 \item{dist}{a survival distribution}
 
-\item{shift}{amount of time to shift distribution, where a positive
-value moves hazards forward and a negative value delays hazards.}
+\item{shift}{amount of time to shift the distribution. A positive
+value delays hazards (shifts the survival curve to the right), and a
+negative value accelerates hazards (shifts the survival curve to the left).}
 }
 \value{
 A \code{surv_shift} object.
@@ -18,6 +19,27 @@ A \code{surv_shift} object.
 \description{
 Apply a fixed shift in time to move the hazards of a survival
 distribution forwards or backwards.
+}
+\details{
+The shifted survival function is defined as:
+
+\deqn{S_{\mathrm{shifted}}(t) = \begin{cases} 1 & t \le \delta \\
+S(t - \delta) & t > \delta \end{cases}}{S_shifted(t) = 1 for
+t <= delta; S_shifted(t) = S(t - delta) for t > delta}
+
+where \eqn{\delta}{delta} is the shift amount and \eqn{S} is the
+baseline survival function.
+
+A positive shift delays all hazards by \eqn{\delta}{delta} time units
+(the curve moves to the right); a negative shift accelerates them
+(the curve moves to the left).
+
+A common use of \code{apply_shift} is to realign the timescale of a
+distribution before passing it to \code{\link{join}}. When a
+distribution is estimated from data that begins at a cut point
+\eqn{c} — so that its own time zero corresponds to \eqn{c} — applying
+\code{apply_shift(dist, c)} maps its internal time to the absolute
+study timescale, which \code{join} requires.
 }
 \examples{
 

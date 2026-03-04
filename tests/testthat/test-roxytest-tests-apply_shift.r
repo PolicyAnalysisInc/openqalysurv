@@ -2,7 +2,7 @@
 
 # File R/apply_shift.r: @tests
 
-test_that("Function apply_shift() @ L48", {
+test_that("Function apply_shift() @ L70", {
   dist1 <- define_surv_param("exp", rate = 0.25)
   expect_equal(
    apply_shift(dist1, 2),
@@ -30,7 +30,7 @@ test_that("Function apply_shift() @ L48", {
 })
 
 
-test_that("Function surv_prob.surv_shift() @ L103", {
+test_that("Function surv_prob.surv_shift() @ L125", {
   dist1 <- define_surv_param("exp", rate = 0.50)
   dist2 <- apply_shift(dist1, 2)
   expect_equal(
@@ -40,7 +40,7 @@ test_that("Function surv_prob.surv_shift() @ L103", {
 })
 
 
-test_that("Function print.surv_shift() @ L136", {
+test_that("Function print.surv_shift() @ L158", {
   dist1 <- apply_shift(define_surv_param('exp', rate = 0.025), 2.5)
   expect_output(
    print(dist1),

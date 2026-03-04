@@ -1,25 +1,40 @@
 #' Define Parametric Mixture or Non-Mixture Cure Distribution
-#' 
-#' Define parametric mixture or not mixture cure distribution
-#' with given parameter values.
-#' 
+#'
+#' Define a parametric mixture or non-mixture cure distribution
+#' with given parameter values. Uses the `flexsurvcure` package
+#' ([pmixsurv]/[pnmixsurv]) for evaluation.
+#'
 #' @name define_surv_cure
 #' @rdname define_surv_cure
 #' @export
-#' 
-#' @param distribution A parametric survival distribution. See 
+#'
+#' @param distribution A parametric survival distribution. See
 #' details for a listing of valid distributions.
-#' @param theta A numeric value representing cure fraction
+#' @param theta A numeric value in \[0, 1\] representing the cure
+#' fraction, i.e. the long-term probability of never experiencing
+#' the event.
 #' @param ... Additional distribution parameters
 #' (see details section below)
 #' @param mixture a logical determining whether a mixture
 #'   or non-mixture model is being defined.
-#'   
+#'
 #' @return a `surv_dist_cure` object.
-#' 
+#'
 #' @details
-#' Supported distributions are listed in the table below.
-#' 
+#' **Mixture cure model** (`mixture = TRUE`):
+#' \deqn{S(t) = \theta + (1 - \theta) \, S_u(t)}
+#'
+#' **Non-mixture cure model** (`mixture = FALSE`):
+#' \deqn{S(t) = \theta^{F_u(t)}}
+#'
+#' where \eqn{\theta} is the cure fraction (long-term survival
+#' probability), \eqn{S_u(t)} is the survival function for the
+#' uncured subgroup, and \eqn{F_u(t) = 1 - S_u(t)} is the
+#' corresponding CDF.
+#'
+#' Supported distributions for the uncured subgroup are listed in
+#' the table below.
+#'
 #' | **Distribution** | **Description** | **Parameters** | **Notes** |
 #' | --- | --- |  --- | --- |
 #' | "exp" | Exponential | rate | |
@@ -32,14 +47,17 @@
 #' | "gengamma" | Generalized Gamma (stable) | mu, sigma, Q | Parameterization from Prentice (1974) |
 #' | "gengamma.orig" | Generalized Gamma (original) | shape, scale, k | Original parameterization from Stacy (1962) |
 #' | "genf" | Generalized F (stable) | mu, sigma, Q, P | Stable reparameterization from Prentice (1975) |
-#' | "genf.org" | Generalized F (original) | mu, sigma, s1, s2 | Origninal parameterization described by Prentice (1975) |
-#' 
-#' @references Stacy, E. W. (1962). A generalization of the gamma
+#' | "genf.orig" | Generalized F (original) | mu, sigma, s1, s2 | Original parameterization described by Prentice (1975) |
+#'
+#' @references Lambert, P.C. (2007). Modeling of the cure fraction
+#' in survival studies. The Stata Journal, 7(3), 351-375.
+#'
+#' Stacy, E. W. (1962). A generalization of the gamma
 #' distribution.  Annals of Mathematical Statistics 33:1187-92.
-#' 
+#'
 #' Prentice, R. L. (1974). A log gamma model and its maximum likelihood
 #' estimation. Biometrika 61(3):539-544.
-#' 
+#'
 #' R. L. Prentice (1975). Discrimination among some parametric
 #' models. Biometrika 62(3):607-614.
 #' 
