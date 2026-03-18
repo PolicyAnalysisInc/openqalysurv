@@ -38,7 +38,23 @@ test_that("Function surv_prob.surv_add_haz() @ L74", {
 })
 
 
-test_that("Function print.surv_add_haz() @ L91", {
+test_that("Function surv_quantile.surv_add_haz() @ L95", {
+  dist1 <- define_surv_param('exp', rate = 0.05)
+  dist2 <- define_surv_param('exp', rate = 0.10)
+  combined <- add_hazards(dist1, dist2)
+  
+  # Roundtrip
+  probs <- c(0.9, 0.5, 0.1)
+  times <- surv_quantile(combined, probs)
+  expect_equal(surv_prob(combined, times), probs, tolerance = 1e-6)
+  
+  # Edge cases
+  expect_equal(surv_quantile(combined, 1), 0)
+  expect_equal(surv_quantile(combined, 0), Inf)
+})
+
+
+test_that("Function print.surv_add_haz() @ L134", {
   dist1 <- define_surv_param('exp', rate = 0.12)
   dist2 <- define_surv_param('exp', rate = 0.18)
   expect_output(

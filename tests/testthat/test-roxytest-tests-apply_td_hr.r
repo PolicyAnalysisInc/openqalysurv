@@ -178,7 +178,22 @@ test_that("Function surv_prob.surv_td_ph() @ L285", {
 })
 
 
-test_that("Function print.surv_td_ph() @ L312", {
+test_that("Function surv_quantile.surv_td_ph() @ L321", {
+  dist1 <- define_surv_param('exp', rate = 0.1)
+  
+  # Roundtrip for td_ph (use high probs that resolve within stored range)
+  td_dist <- apply_td_hr(dist1, 0:99, rep(c(0.5, 0.8), each = 50))
+  probs <- c(0.9, 0.5, 0.2)
+  times <- surv_quantile(td_dist, probs)
+  expect_equal(surv_prob(td_dist, times), probs, tolerance = 1e-4)
+  
+  # Edge cases
+  expect_equal(surv_quantile(td_dist, 1), 0)
+  expect_equal(surv_quantile(td_dist, 0), Inf)
+})
+
+
+test_that("Function print.surv_td_ph() @ L369", {
   dist1 <- apply_td_hr(define_surv_param('exp', rate = 0.1), 0:2, c(0.5, 0.8, 1.2))
   expect_output(print(dist1), 'time-dependent proportional hazards')
 })

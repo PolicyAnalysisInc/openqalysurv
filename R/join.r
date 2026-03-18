@@ -234,8 +234,77 @@ surv_prob.surv_join <- function(x, time, ...) {
 }
 
 #' @export
+#'
 #' @tests
-#' 
+#' dist1 <- define_surv_param('exp', rate = 0.05)
+#' dist2 <- define_surv_param('exp', rate = 0.1)
+#'
+#' # Roundtrip for 2-segment join
+#' jdist <- join(dist1, 20, dist2)
+#' probs <- c(0.9, 0.5, 0.1)
+#' times <- surv_quantile(jdist, probs)
+#' expect_equal(surv_prob(jdist, times), probs, tolerance = 1e-6)
+#'
+#' # Roundtrip for 3-segment join
+#' dist3 <- define_surv_param('exp', rate = 0.2)
+#' jdist3 <- join(dist1, 10, dist2, 30, dist3)
+#' times3 <- surv_quantile(jdist3, probs)
+#' expect_equal(surv_prob(jdist3, times3), probs, tolerance = 1e-6)
+#'
+#' # Edge cases
+#' expect_equal(surv_quantile(jdist, 1), 0)
+#' expect_equal(surv_quantile(jdist, 0), Inf)
+#'
+surv_quantile.surv_join <- function(x, probs, ...) {
+    check_probs(probs)
+
+    # Precompute survival at each cut point using the joined distribution
+    n_cuts <- length(x$cuts)
+    surv_at_cuts <- surv_prob(x, x$cuts, ...)
+
+    # Precompute scale factors for each segment beyond first
+    scalars <- numeric(n_cuts)
+    surv_at_cut_prev <- surv_prob(x$dists[[1]], x$cuts[1], ...)
+    for (i in seq_len(n_cuts)) {
+        surv_at_cut_this <- surv_prob(x$dists[[i + 1]], x$cuts[i], ...)
+        scalars[i] <- surv_at_cuts[i] / surv_at_cut_this
+        if (i < n_cuts) {
+            surv_at_cut_prev <- scalars[i] * surv_prob(x$dists[[i + 1]], x$cuts[i + 1], ...)
+        }
+    }
+
+    vapply(probs, function(p) {
+        if (p == 1) return(0)
+        if (p == 0) return(Inf)
+
+        # Find which segment p falls in
+        # Segment 1: p >= surv_at_cuts[1]
+        # Segment k: surv_at_cuts[k-1] > p >= surv_at_cuts[k]
+        # Last segment: p < surv_at_cuts[n_cuts]
+        seg <- 1
+        for (i in seq_len(n_cuts)) {
+            if (p < surv_at_cuts[i]) {
+                seg <- i + 1
+            } else {
+                break
+            }
+        }
+
+        if (seg == 1) {
+            return(surv_quantile(x$dists[[1]], p, ...))
+        }
+
+        # Rescale p for the segment's distribution
+        # S_joined(t) = scalar * S_seg(t) in this segment
+        # So S_seg(t) = p / scalar
+        p_seg <- p / scalars[seg - 1]
+        surv_quantile(x$dists[[seg]], p_seg, ...)
+    }, numeric(1))
+}
+
+#' @export
+#' @tests
+#'
 #' dist1 <- define_surv_param('exp', rate = 0.05)
 #' dist2 <- define_surv_param('exp', rate = 0.1)
 #' expect_output(

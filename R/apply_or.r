@@ -130,6 +130,35 @@ surv_prob.surv_po <- function(x, time, ...) {
 }
 
 #' @export
+#'
+#' @tests
+#' dist1 <- define_surv_param('exp', rate = 0.1)
+#' po_dist <- apply_or(dist1, 0.5)
+#'
+#' # Roundtrip
+#' probs <- c(0.9, 0.5, 0.1)
+#' times <- surv_quantile(po_dist, probs)
+#' expect_equal(surv_prob(po_dist, times), probs, tolerance = 1e-6)
+#'
+#' # p=1 returns 0 (not NaN)
+#' expect_equal(surv_quantile(po_dist, 1), 0)
+#'
+#' # p=0 returns Inf
+#' expect_equal(surv_quantile(po_dist, 0), Inf)
+#'
+surv_quantile.surv_po <- function(x, probs, ...) {
+    check_probs(probs)
+    vapply(probs, function(p) {
+        if (p == 1) return(0)
+        if (p == 0) return(Inf)
+        # Invert: S_po(t) = odds_to_prob(prob_to_odds(S_inner(t)) / or)
+        # So S_inner(t) = odds_to_prob(or * prob_to_odds(p))
+        p_inner <- odds_to_prob(x$or * prob_to_odds(p))
+        surv_quantile(x$dist, p_inner, ...)
+    }, numeric(1))
+}
+
+#' @export
 #' 
 #' @tests
 #' dist1 <- apply_or(define_surv_param('exp', rate = 0.025), 0.5)

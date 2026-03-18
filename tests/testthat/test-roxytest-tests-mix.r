@@ -65,3 +65,19 @@ test_that("Function surv_prob.surv_mix() @ L172", {
   )
 })
 
+
+test_that("Function surv_quantile.surv_mix() @ L193", {
+  dist1 <- define_surv_param('exp', rate = 0.05)
+  dist2 <- define_surv_param('exp', rate = 0.15)
+  mixed <- mix(dist1, 0.4, dist2, 0.6)
+  
+  # Roundtrip
+  probs <- c(0.9, 0.5, 0.1)
+  times <- surv_quantile(mixed, probs)
+  expect_equal(surv_prob(mixed, times), probs, tolerance = 1e-6)
+  
+  # Edge cases
+  expect_equal(surv_quantile(mixed, 1), 0)
+  expect_equal(surv_quantile(mixed, 0), Inf)
+})
+

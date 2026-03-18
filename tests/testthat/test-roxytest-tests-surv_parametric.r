@@ -50,14 +50,48 @@ test_that("Function surv_prob.surv_parametric() @ L85", {
 })
 
 
-test_that("Function get_flexsurv_dist() @ L111", {
+test_that("Function surv_quantile.surv_parametric() @ L135", {
+  # Exponential matches R builtin
+  dist_exp <- define_surv_param('exp', rate = 0.12)
+  expect_equal(
+   surv_quantile(dist_exp, 0.5),
+   qexp(0.5, rate = 0.12),
+   tolerance = 1e-10
+  )
+  
+  # Weibull matches R builtin
+  dist_weib <- define_surv_param('weibull', shape = 1.5, scale = 20)
+  expect_equal(
+   surv_quantile(dist_weib, 0.5),
+   qweibull(0.5, shape = 1.5, scale = 20),
+   tolerance = 1e-10
+  )
+  
+  # Roundtrip
+  probs <- c(0.9, 0.5, 0.1)
+  times <- surv_quantile(dist_weib, probs)
+  expect_equal(surv_prob(dist_weib, times), probs, tolerance = 1e-10)
+  
+  # Edge cases
+  expect_equal(surv_quantile(dist_exp, 1), 0)
+  expect_equal(surv_quantile(dist_exp, 0), Inf)
+})
+
+
+test_that("Function get_flexsurv_dist() @ L149", {
   expect_equal(get_flexsurv_dist('weibull'), pweibull)
   expect_equal(get_flexsurv_dist('genf'), pgenf)
   expect_equal(get_flexsurv_dist('llogis'), pllogis)
 })
 
 
-test_that("Function get_flexsurv_dist_params() @ L127", {
+test_that("Function get_flexsurv_quantile() @ L156", {
+  expect_equal(get_flexsurv_quantile('weibull'), qweibull)
+  expect_equal(get_flexsurv_quantile('exp'), qexp)
+})
+
+
+test_that("Function get_flexsurv_dist_params() @ L172", {
   expect_equal(
    get_flexsurv_dist_params('weibull'), c('shape', 'scale')
   )
@@ -72,7 +106,7 @@ test_that("Function get_flexsurv_dist_params() @ L127", {
 })
 
 
-test_that("Function get_dist_params_from_args() @ L144", {
+test_that("Function get_dist_params_from_args() @ L189", {
   expect_equal(
    get_dist_params_from_args(
        'weibull',
@@ -83,7 +117,7 @@ test_that("Function get_dist_params_from_args() @ L144", {
 })
 
 
-test_that("Function get_dist_param_from_args() @ L171", {
+test_that("Function get_dist_param_from_args() @ L216", {
   expect_equal(
    get_dist_param_from_args(
        'scale',
@@ -94,7 +128,7 @@ test_that("Function get_dist_param_from_args() @ L171", {
 })
 
 
-test_that("Function get_dist_display_name() @ L189", {
+test_that("Function get_dist_display_name() @ L234", {
   expect_equal(
    get_dist_display_name('foo'),
    'foo'
@@ -107,7 +141,7 @@ test_that("Function get_dist_display_name() @ L189", {
 })
 
 
-test_that("Function check_param_names() @ L204", {
+test_that("Function check_param_names() @ L249", {
   expect_error(
    check_param_names(list(shape=1,foo=2), 'weibullPH'), 
    'Error defining Weibull (PH) distribution, parameters missing from function call: "scale".',

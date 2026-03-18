@@ -76,6 +76,49 @@ surv_prob.surv_add_haz <- function(x, time, ...) {
     Reduce(`*`, map(x$dists, function(dist) surv_prob(dist, time, ...)))
 }
 
+#' @export
+#'
+#' @tests
+#' dist1 <- define_surv_param('exp', rate = 0.05)
+#' dist2 <- define_surv_param('exp', rate = 0.10)
+#' combined <- add_hazards(dist1, dist2)
+#'
+#' # Roundtrip
+#' probs <- c(0.9, 0.5, 0.1)
+#' times <- surv_quantile(combined, probs)
+#' expect_equal(surv_prob(combined, times), probs, tolerance = 1e-6)
+#'
+#' # Edge cases
+#' expect_equal(surv_quantile(combined, 1), 0)
+#' expect_equal(surv_quantile(combined, 0), Inf)
+#'
+surv_quantile.surv_add_haz <- function(x, probs, ...) {
+    check_probs(probs)
+    n <- length(x$dists)
+    vapply(probs, function(p) {
+        if (p == 1) return(0)
+        if (p == 0) return(Inf)
+
+        # Bracket: [min Q_i(p^(1/n)), max Q_i(p^(1/n))]
+        p_adj <- p^(1/n)
+        component_quantiles <- map_dbl(x$dists, function(d) surv_quantile(d, p_adj, ...))
+        lo <- min(component_quantiles)
+        hi <- max(component_quantiles)
+
+        if (abs(hi - lo) < 1e-12) return(lo)
+
+        finite_qs <- component_quantiles[is.finite(component_quantiles)]
+        if (length(finite_qs) == 0) return(Inf)
+        if (any(is.infinite(component_quantiles))) {
+            hi <- max(finite_qs) * 2
+            while (surv_prob(x, hi) > p) hi <- hi * 2
+        }
+
+        uniroot(function(t) surv_prob(x, t) - p, c(lo, hi),
+                tol = .Machine$double.eps^0.5)$root
+    }, numeric(1))
+}
+
 #' @export 
 #' 
 #' @tests

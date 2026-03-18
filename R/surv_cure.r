@@ -170,6 +170,62 @@ surv_prob.surv_cure <- function(x, time, ...) {
     ret
 }
 
+#' @export
+#'
+#' @tests
+#' # Mixture cure model
+#' dist_mix_cure <- define_surv_cure('exp', theta = 0.2, rate = 0.05, mixture = TRUE)
+#'
+#' # Roundtrip
+#' probs <- c(0.9, 0.5, 0.3)
+#' times <- surv_quantile(dist_mix_cure, probs)
+#' expect_equal(surv_prob(dist_mix_cure, times), probs, tolerance = 1e-6)
+#'
+#' # p=1 returns 0 (not NaN), even when theta=1
+#' expect_equal(surv_quantile(dist_mix_cure, 1), 0)
+#' full_cure <- define_surv_cure('exp', theta = 1, rate = 0.05, mixture = TRUE)
+#' expect_equal(surv_quantile(full_cure, 1), 0)
+#'
+#' # p <= theta returns Inf (cure fraction floor)
+#' expect_equal(surv_quantile(dist_mix_cure, 0.2), Inf)
+#' expect_equal(surv_quantile(dist_mix_cure, 0.1), Inf)
+#' expect_equal(surv_quantile(dist_mix_cure, 0), Inf)
+#'
+#' # Non-mixture cure model roundtrip
+#' dist_nm_cure <- define_surv_cure('weibull', theta = 0.3, shape = 1.2, scale = 20, mixture = FALSE)
+#' probs_nm <- c(0.9, 0.5, 0.4)
+#' times_nm <- surv_quantile(dist_nm_cure, probs_nm)
+#' expect_equal(surv_prob(dist_nm_cure, times_nm), probs_nm, tolerance = 1e-6)
+#'
+surv_quantile.surv_cure <- function(x, probs, ...) {
+    check_probs(probs)
+
+    theta <- x$parameters$theta
+
+    # Get base distribution params (all except theta)
+    base_params <- x$parameters[names(x$parameters) != 'theta']
+    q_func <- get_flexsurv_quantile(x$distribution)
+
+    vapply(probs, function(p) {
+        if (p == 1) return(0)
+        if (p <= theta) return(Inf)
+
+        if (x$mixture) {
+            # Mixture: S(t) = theta + (1-theta)*S_u(t)
+            # S_u(t) = (p - theta) / (1 - theta)
+            s_u <- (p - theta) / (1 - theta)
+        } else {
+            # Non-mixture: S(t) = theta^F_u(t), where F_u = 1-S_u
+            # log(p) = F_u * log(theta) => F_u = log(p)/log(theta)
+            # S_u = 1 - F_u = 1 - log(p)/log(theta)
+            s_u <- 1 - log(p) / log(theta)
+        }
+
+        args_for_q <- append(list(p = s_u, lower.tail = FALSE), base_params)
+        do.call(q_func, args_for_q)
+    }, numeric(1))
+}
+
 #' @tests
 #' expect_error(check_theta(1), NA)
 #' expect_error(check_theta(0.5), NA)

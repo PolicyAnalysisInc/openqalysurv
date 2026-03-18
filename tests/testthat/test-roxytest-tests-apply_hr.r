@@ -59,7 +59,30 @@ test_that("Function surv_prob.surv_ph() @ L135", {
 })
 
 
-test_that("Function print.surv_ph() @ L151", {
+test_that("Function surv_quantile.surv_ph() @ L162", {
+  dist1 <- define_surv_param('weibull', shape = 1.5, scale = 20)
+  
+  # PH algebra: Q_ph(p) = Q_inner(p^(1/hr))
+  expect_equal(
+   surv_quantile(apply_hr(dist1, 2), 0.5),
+   surv_quantile(dist1, 0.5^(1/2)),
+   tolerance = 1e-10
+  )
+  
+  # Roundtrip
+  ph_dist <- apply_hr(dist1, 0.7)
+  probs <- c(0.9, 0.5, 0.1)
+  times <- surv_quantile(ph_dist, probs)
+  expect_equal(surv_prob(ph_dist, times), probs, tolerance = 1e-6)
+  
+  # hr=0 means survival never drops: Q(p<1) = Inf
+  hr0_dist <- apply_hr(dist1, 0)
+  expect_equal(surv_quantile(hr0_dist, 0.5), Inf)
+  expect_equal(surv_quantile(hr0_dist, 1), 0)
+})
+
+
+test_that("Function print.surv_ph() @ L184", {
   dist1 <- apply_hr(define_surv_param('exp', rate = 0.025), 0.5)
   expect_output(
    print(dist1),

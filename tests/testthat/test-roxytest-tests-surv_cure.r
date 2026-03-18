@@ -35,7 +35,34 @@ test_that("Function surv_prob.surv_cure() @ L144", {
 })
 
 
-test_that("Function check_theta() @ L187", {
+test_that("Function surv_quantile.surv_cure() @ L200", {
+  # Mixture cure model
+  dist_mix_cure <- define_surv_cure('exp', theta = 0.2, rate = 0.05, mixture = TRUE)
+  
+  # Roundtrip
+  probs <- c(0.9, 0.5, 0.3)
+  times <- surv_quantile(dist_mix_cure, probs)
+  expect_equal(surv_prob(dist_mix_cure, times), probs, tolerance = 1e-6)
+  
+  # p=1 returns 0 (not NaN), even when theta=1
+  expect_equal(surv_quantile(dist_mix_cure, 1), 0)
+  full_cure <- define_surv_cure('exp', theta = 1, rate = 0.05, mixture = TRUE)
+  expect_equal(surv_quantile(full_cure, 1), 0)
+  
+  # p <= theta returns Inf (cure fraction floor)
+  expect_equal(surv_quantile(dist_mix_cure, 0.2), Inf)
+  expect_equal(surv_quantile(dist_mix_cure, 0.1), Inf)
+  expect_equal(surv_quantile(dist_mix_cure, 0), Inf)
+  
+  # Non-mixture cure model roundtrip
+  dist_nm_cure <- define_surv_cure('weibull', theta = 0.3, shape = 1.2, scale = 20, mixture = FALSE)
+  probs_nm <- c(0.9, 0.5, 0.4)
+  times_nm <- surv_quantile(dist_nm_cure, probs_nm)
+  expect_equal(surv_prob(dist_nm_cure, times_nm), probs_nm, tolerance = 1e-6)
+})
+
+
+test_that("Function check_theta() @ L243", {
   expect_error(check_theta(1), NA)
   expect_error(check_theta(0.5), NA)
   expect_error(check_theta(0), NA)

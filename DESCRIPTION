@@ -34,7 +34,7 @@ Imports:
     ggplot2,
     openqalytools,
     Rcpp
-Suggests: 
+Suggests:
     testthat (>= 3.0.0),
     roxytest,
     covr,

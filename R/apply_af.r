@@ -137,6 +137,39 @@ surv_prob.surv_aft <- function(x, time, ...) {
 }
 
 #' @export
+#'
+#' @tests
+#' dist1 <- define_surv_param('weibull', shape = 1.5, scale = 20)
+#'
+#' # AFT algebra: Q_aft(p) = af * Q_inner(p)
+#' expect_equal(
+#'  surv_quantile(apply_af(dist1, 3), 0.5),
+#'  3 * surv_quantile(dist1, 0.5),
+#'  tolerance = 1e-10
+#' )
+#'
+#' # Roundtrip
+#' aft_dist <- apply_af(dist1, 2.5)
+#' probs <- c(0.9, 0.5, 0.1)
+#' times <- surv_quantile(aft_dist, probs)
+#' expect_equal(surv_prob(aft_dist, times), probs, tolerance = 1e-6)
+#'
+#' # af=0 means instant death: Q(p) = 0 for all p
+#' af0_dist <- apply_af(dist1, 0)
+#' expect_equal(surv_quantile(af0_dist, 0.5), 0)
+#' expect_equal(surv_quantile(af0_dist, 1), 0)
+#'
+surv_quantile.surv_aft <- function(x, probs, ...) {
+    check_probs(probs)
+    vapply(probs, function(p) {
+        if (p == 1) return(0)
+        if (p == 0) return(Inf * x$af)
+        if (x$af == 0) return(0)
+        x$af * surv_quantile(x$dist, p, ...)
+    }, numeric(1))
+}
+
+#' @export
 #' 
 #' @tests
 #' dist1 <- apply_af(define_surv_param('exp', rate = 0.025), 0.5)

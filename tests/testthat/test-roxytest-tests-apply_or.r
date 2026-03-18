@@ -53,7 +53,24 @@ test_that("Function surv_prob.surv_po() @ L124", {
 })
 
 
-test_that("Function print.surv_po() @ L143", {
+test_that("Function surv_quantile.surv_po() @ L149", {
+  dist1 <- define_surv_param('exp', rate = 0.1)
+  po_dist <- apply_or(dist1, 0.5)
+  
+  # Roundtrip
+  probs <- c(0.9, 0.5, 0.1)
+  times <- surv_quantile(po_dist, probs)
+  expect_equal(surv_prob(po_dist, times), probs, tolerance = 1e-6)
+  
+  # p=1 returns 0 (not NaN)
+  expect_equal(surv_quantile(po_dist, 1), 0)
+  
+  # p=0 returns Inf
+  expect_equal(surv_quantile(po_dist, 0), Inf)
+})
+
+
+test_that("Function print.surv_po() @ L172", {
   dist1 <- apply_or(define_surv_param('exp', rate = 0.025), 0.5)
   expect_output(
    print(dist1),

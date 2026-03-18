@@ -92,7 +92,29 @@ test_that("Function surv_prob.surv_join() @ L214", {
 })
 
 
-test_that("Function print.surv_join() @ L248", {
+test_that("Function surv_quantile.surv_join() @ L258", {
+  dist1 <- define_surv_param('exp', rate = 0.05)
+  dist2 <- define_surv_param('exp', rate = 0.1)
+  
+  # Roundtrip for 2-segment join
+  jdist <- join(dist1, 20, dist2)
+  probs <- c(0.9, 0.5, 0.1)
+  times <- surv_quantile(jdist, probs)
+  expect_equal(surv_prob(jdist, times), probs, tolerance = 1e-6)
+  
+  # Roundtrip for 3-segment join
+  dist3 <- define_surv_param('exp', rate = 0.2)
+  jdist3 <- join(dist1, 10, dist2, 30, dist3)
+  times3 <- surv_quantile(jdist3, probs)
+  expect_equal(surv_prob(jdist3, times3), probs, tolerance = 1e-6)
+  
+  # Edge cases
+  expect_equal(surv_quantile(jdist, 1), 0)
+  expect_equal(surv_quantile(jdist, 0), Inf)
+})
+
+
+test_that("Function print.surv_join() @ L317", {
   dist1 <- define_surv_param('exp', rate = 0.05)
   dist2 <- define_surv_param('exp', rate = 0.1)
   expect_output(

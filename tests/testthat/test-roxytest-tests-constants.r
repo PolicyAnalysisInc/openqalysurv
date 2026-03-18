@@ -2,7 +2,7 @@
 
 # File R/constants.r: @tests
 
-test_that("Function match_dist_name() @ L195", {
+test_that("Function match_dist_name() @ L200", {
   expect_equal(match_dist_name("Weibull", survreg_dists, "survreg"), "weibull")
   expect_equal(match_dist_name("EXPONENTIAL", survreg_dists, "survreg"), "exponential")
   expect_error(
@@ -13,7 +13,7 @@ test_that("Function match_dist_name() @ L195", {
 })
 
 
-test_that("Function check_source_params() @ L230", {
+test_that("Function check_source_params() @ L235", {
   expect_silent(
    check_source_params(
        list(intercept = 3, scale = 0.8),
@@ -35,7 +35,7 @@ test_that("Function check_source_params() @ L230", {
 })
 
 
-test_that("Function check_numeric_param() @ L260", {
+test_that("Function check_numeric_param() @ L265", {
   expect_silent(check_numeric_param(3.5, "intercept", "survreg", "weibull"))
   expect_error(
    check_numeric_param("a", "intercept", "survreg", "weibull"),

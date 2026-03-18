@@ -63,7 +63,30 @@ test_that("Function surv_prob.surv_aft() @ L134", {
 })
 
 
-test_that("Function print.surv_aft() @ L151", {
+test_that("Function surv_quantile.surv_aft() @ L162", {
+  dist1 <- define_surv_param('weibull', shape = 1.5, scale = 20)
+  
+  # AFT algebra: Q_aft(p) = af * Q_inner(p)
+  expect_equal(
+   surv_quantile(apply_af(dist1, 3), 0.5),
+   3 * surv_quantile(dist1, 0.5),
+   tolerance = 1e-10
+  )
+  
+  # Roundtrip
+  aft_dist <- apply_af(dist1, 2.5)
+  probs <- c(0.9, 0.5, 0.1)
+  times <- surv_quantile(aft_dist, probs)
+  expect_equal(surv_prob(aft_dist, times), probs, tolerance = 1e-6)
+  
+  # af=0 means instant death: Q(p) = 0 for all p
+  af0_dist <- apply_af(dist1, 0)
+  expect_equal(surv_quantile(af0_dist, 0.5), 0)
+  expect_equal(surv_quantile(af0_dist, 1), 0)
+})
+
+
+test_that("Function print.surv_aft() @ L184", {
   dist1 <- apply_af(define_surv_param('exp', rate = 0.025), 0.5)
   expect_output(
    print(dist1),

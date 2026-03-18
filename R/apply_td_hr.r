@@ -306,6 +306,63 @@ surv_prob.surv_td_ph <- function(x, time, ...) {
 #' @export
 #'
 #' @tests
+#' dist1 <- define_surv_param('exp', rate = 0.1)
+#'
+#' # Roundtrip for td_ph (use high probs that resolve within stored range)
+#' td_dist <- apply_td_hr(dist1, 0:99, rep(c(0.5, 0.8), each = 50))
+#' probs <- c(0.9, 0.5, 0.2)
+#' times <- surv_quantile(td_dist, probs)
+#' expect_equal(surv_prob(td_dist, times), probs, tolerance = 1e-4)
+#'
+#' # Edge cases
+#' expect_equal(surv_quantile(td_dist, 1), 0)
+#' expect_equal(surv_quantile(td_dist, 0), Inf)
+#'
+surv_quantile.surv_td_ph <- function(x, probs, ...) {
+    check_probs(probs)
+
+    # Compute S_td at each stored time point
+    stored_surv <- surv_prob(x, x$time, ...)
+
+    vapply(probs, function(p) {
+        if (p == 1) return(0)
+        if (p == 0) return(Inf)
+
+        # Find interval where S_td crosses p
+        n <- length(x$time)
+
+        # If p >= S_td(t_1), it's before the first stored time
+        if (p >= stored_surv[1]) {
+            # In interval [0, t_1) with hr[1]
+            if (x$hr[1] == 0) return(Inf)
+            p_base <- p^(1/x$hr[1])
+            return(surv_quantile(x$dist, p_base, ...))
+        }
+
+        # Find the interval
+        for (k in seq_len(n - 1)) {
+            if (p >= stored_surv[k + 1]) {
+                # p is in interval [t_k, t_{k+1})
+                if (x$hr[k + 1] == 0) next
+                # S_td(t) = S_td(t_k) * (S_base(t)/S_base(t_k))^hr_k
+                # Invert: S_base(t) = S_base(t_k) * (p/S_td(t_k))^(1/hr_k)
+                s_base_at_tk <- surv_prob(x$dist, x$time[k], ...)
+                p_base <- s_base_at_tk * (p / stored_surv[k])^(1/x$hr[k + 1])
+                return(surv_quantile(x$dist, p_base, ...))
+            }
+        }
+
+        # Extrapolate beyond last stored time with last HR
+        if (x$hr[n] == 0) return(Inf)
+        s_base_at_tn <- surv_prob(x$dist, x$time[n], ...)
+        p_base <- s_base_at_tn * (p / stored_surv[n])^(1/x$hr[n])
+        surv_quantile(x$dist, p_base, ...)
+    }, numeric(1))
+}
+
+#' @export
+#'
+#' @tests
 #' dist1 <- apply_td_hr(define_surv_param('exp', rate = 0.1), 0:2, c(0.5, 0.8, 1.2))
 #' expect_output(print(dist1), 'time-dependent proportional hazards')
 #'

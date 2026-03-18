@@ -70,7 +70,12 @@ messages <- list(
     fp_min_powers = 'Error defining fractional polynomial distribution, must specify at least one power.',
     invalid_source_dist = 'Error defining {source} {dist} distribution, "{dist}" is not a supported distribution for {source}.',
     missing_source_params = 'Error defining {source} {dist} distribution, required parameters missing: {params}.',
-    invalid_source_param = 'Error defining {source} {dist} distribution, parameter "{param}" must be a single non-NA numeric value.'
+    invalid_source_param = 'Error defining {source} {dist} distribution, parameter "{param}" must be a single non-NA numeric value.',
+    surv_quantile_invalid_probs = 'Error computing survival quantiles, "probs" must be numeric values in the interval [0, 1].',
+    surv_quantile_missing_probs = 'Error computing survival quantiles, "probs" cannot contain NA values.',
+    surv_random_invalid_n = 'Error generating random survival times, "n" must be a single positive integer.',
+    max_hazards_wrong_type_dist = 'Error computing maximum hazards, invalid survival distribution provided.',
+    max_hazards_invalid_cycle_length = 'Error computing maximum hazards, "cycle_length" must be a single positive numeric value.'
 )
 
 # Possible values for distribution argument to flexsurvreg

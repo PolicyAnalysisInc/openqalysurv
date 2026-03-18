@@ -173,3 +173,49 @@ surv_prob.surv_mix <- function(x, time, ...) {
     check_times(time, 'calculating survival probabilities', 'time')
     Reduce(`+`, map2(x$dists, x$weights, function(x, w) surv_prob(x, time, ...) * w))
 }
+
+#' @export
+#'
+#' @tests
+#' dist1 <- define_surv_param('exp', rate = 0.05)
+#' dist2 <- define_surv_param('exp', rate = 0.15)
+#' mixed <- mix(dist1, 0.4, dist2, 0.6)
+#'
+#' # Roundtrip
+#' probs <- c(0.9, 0.5, 0.1)
+#' times <- surv_quantile(mixed, probs)
+#' expect_equal(surv_prob(mixed, times), probs, tolerance = 1e-6)
+#'
+#' # Edge cases
+#' expect_equal(surv_quantile(mixed, 1), 0)
+#' expect_equal(surv_quantile(mixed, 0), Inf)
+#'
+surv_quantile.surv_mix <- function(x, probs, ...) {
+    check_probs(probs)
+    vapply(probs, function(p) {
+        if (p == 1) return(0)
+        if (p == 0) return(Inf)
+
+        # Bracket: [min Q_i(p), max Q_i(p)]
+        component_quantiles <- map_dbl(x$dists, function(d) surv_quantile(d, p, ...))
+        lo <- min(component_quantiles)
+        hi <- max(component_quantiles)
+
+        # Zero-width bracket
+        if (abs(hi - lo) < 1e-12) return(lo)
+
+        # Handle Inf components
+        finite_qs <- component_quantiles[is.finite(component_quantiles)]
+        if (length(finite_qs) == 0) return(Inf)
+        if (any(is.infinite(component_quantiles))) {
+            # Check if S_mix(Inf) > p (i.e., mass at infinity)
+            s_at_inf <- surv_prob(x, .Machine$double.xmax / 2)
+            if (s_at_inf >= p) return(Inf)
+            hi <- max(finite_qs) * 2
+            while (surv_prob(x, hi) > p) hi <- hi * 2
+        }
+
+        uniroot(function(t) surv_prob(x, t) - p, c(lo, hi),
+                tol = .Machine$double.eps^0.5)$root
+    }, numeric(1))
+}

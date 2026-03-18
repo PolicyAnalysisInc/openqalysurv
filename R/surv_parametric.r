@@ -104,12 +104,57 @@ surv_prob.surv_parametric <- function(x, time, ...) {
     ret
 }
 
+#' @export
+#'
+#' @tests
+#' # Exponential matches R builtin
+#' dist_exp <- define_surv_param('exp', rate = 0.12)
+#' expect_equal(
+#'  surv_quantile(dist_exp, 0.5),
+#'  qexp(0.5, rate = 0.12),
+#'  tolerance = 1e-10
+#' )
+#'
+#' # Weibull matches R builtin
+#' dist_weib <- define_surv_param('weibull', shape = 1.5, scale = 20)
+#' expect_equal(
+#'  surv_quantile(dist_weib, 0.5),
+#'  qweibull(0.5, shape = 1.5, scale = 20),
+#'  tolerance = 1e-10
+#' )
+#'
+#' # Roundtrip
+#' probs <- c(0.9, 0.5, 0.1)
+#' times <- surv_quantile(dist_weib, probs)
+#' expect_equal(surv_prob(dist_weib, times), probs, tolerance = 1e-10)
+#'
+#' # Edge cases
+#' expect_equal(surv_quantile(dist_exp, 1), 0)
+#' expect_equal(surv_quantile(dist_exp, 0), Inf)
+#'
+surv_quantile.surv_parametric <- function(x, probs, ...) {
+    check_probs(probs)
+    q_func <- get_flexsurv_quantile(x$distribution)
+    args_for_q <- append(list(p = probs, lower.tail = FALSE), x$parameters)
+    result <- do.call(q_func, args_for_q)
+    result[probs == 1] <- 0
+    result[probs == 0] <- Inf
+    result
+}
+
 #' @tests
 #' expect_equal(get_flexsurv_dist('weibull'), pweibull)
 #' expect_equal(get_flexsurv_dist('genf'), pgenf)
 #' expect_equal(get_flexsurv_dist('llogis'), pllogis)
 get_flexsurv_dist <- function(dist_name) {
     get(paste0("p", dist_name))
+}
+
+#' @tests
+#' expect_equal(get_flexsurv_quantile('weibull'), qweibull)
+#' expect_equal(get_flexsurv_quantile('exp'), qexp)
+get_flexsurv_quantile <- function(dist_name) {
+    get(paste0("q", dist_name))
 }
 
 #' @tests

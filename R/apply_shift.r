@@ -144,7 +144,38 @@ surv_prob.surv_shift <- function(x, time, ...) {
 }
 
 #' @export
-#' 
+#'
+#' @tests
+#' dist1 <- define_surv_param('exp', rate = 0.1)
+#'
+#' # Shift algebra: Q_shift(p) = shift + Q_inner(p)
+#' expect_equal(
+#'  surv_quantile(apply_shift(dist1, 5), 0.5),
+#'  5 + surv_quantile(dist1, 0.5),
+#'  tolerance = 1e-10
+#' )
+#'
+#' # Roundtrip
+#' shifted <- apply_shift(dist1, 3)
+#' probs <- c(0.9, 0.5, 0.1)
+#' times <- surv_quantile(shifted, probs)
+#' expect_equal(surv_prob(shifted, times), probs, tolerance = 1e-6)
+#'
+#' # Negative shift: clamp to 0
+#' shifted_neg <- apply_shift(dist1, -100)
+#' expect_equal(surv_quantile(shifted_neg, 0.999), 0)
+#'
+surv_quantile.surv_shift <- function(x, probs, ...) {
+    check_probs(probs)
+    vapply(probs, function(p) {
+        if (p == 1) return(0)
+        if (p == 0) return(Inf)
+        max(0, x$shift + surv_quantile(x$dist, p, ...))
+    }, numeric(1))
+}
+
+#' @export
+#'
 #' @tests
 #' dist1 <- apply_shift(define_surv_param('exp', rate = 0.025), 2.5)
 #' expect_output(
