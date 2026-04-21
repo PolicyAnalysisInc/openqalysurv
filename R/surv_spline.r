@@ -4,7 +4,24 @@
 #' 
 #' Define Royston & Parmar restricted cubic spline parametric
 #' survival distribution.
-#' 
+#'
+#' @details
+#' These models use restricted cubic splines to flexibly model a
+#' transformation of the survival function as a function of log time,
+#' as proposed by Royston & Parmar (2002) and implemented in
+#' \code{\link[flexsurv]{flexsurvspline}}. Restricted cubic splines
+#' are piecewise cubic polynomials constrained to be linear beyond
+#' the boundary knots, which avoids overfitting in the tails where
+#' data are sparse. The \code{scale} parameter determines which
+#' transformation of the survival function is modeled as the
+#' restricted cubic spline: \code{"hazard"} fits the log cumulative
+#' hazard (proportional hazards), \code{"odds"} fits the log
+#' cumulative odds (proportional odds), and \code{"normal"} fits
+#' the probit (inverse normal) transformation. With no internal
+#' knots beyond the boundaries, these restricted cubic spline models
+#' reduce to the Weibull, log-logistic, and lognormal distributions
+#' respectively.
+#'
 #' @name define_surv_spline
 #' @rdname define_surv_spline
 #' @export

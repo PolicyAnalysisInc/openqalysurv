@@ -2,7 +2,7 @@
 
 # File R/surv_spline.r: @tests
 
-test_that("Function define_surv_spline() @ L37", {
+test_that("Function define_surv_spline() @ L54", {
   expect_equal(
    define_surv_spline(
        scale = 'hazard',
@@ -18,7 +18,7 @@ test_that("Function define_surv_spline() @ L37", {
 })
 
 
-test_that("Function get_spline_params_from_args() @ L92", {
+test_that("Function get_spline_params_from_args() @ L109", {
   expect_equal(
    get_spline_params_from_args(list(1,2,3,4,5,c(6, 6))),
    list(
@@ -55,7 +55,7 @@ test_that("Function get_spline_params_from_args() @ L92", {
 })
 
 
-test_that("Function check_spline_params() @ L156", {
+test_that("Function check_spline_params() @ L173", {
   expect_error(
    check_spline_params(list(1,2,3,4,5)),
    'must provide at least two parameter values',
@@ -76,7 +76,7 @@ test_that("Function check_spline_params() @ L156", {
 })
 
 
-test_that("Function print.surv_spline() @ L188", {
+test_that("Function print.surv_spline() @ L205", {
   dist1 <- define_surv_spline(
    scale = 'hazard',
    gamma1 = -2.08, gamma2 = 2.75, gamma3 = 0.23,
@@ -90,7 +90,7 @@ test_that("Function print.surv_spline() @ L188", {
 })
 
 
-test_that("Function surv_prob.surv_spline() @ L213", {
+test_that("Function surv_prob.surv_spline() @ L230", {
   dist1 <- define_surv_spline(
    scale = 'hazard',
    gamma1 = -2.08, gamma2 = 2.75, gamma3 = 0.23,
@@ -104,7 +104,7 @@ test_that("Function surv_prob.surv_spline() @ L213", {
 })
 
 
-test_that("Function get_spline_scale_display_name() @ L254", {
+test_that("Function get_spline_scale_display_name() @ L271", {
   expect_equal(
    get_spline_scale_display_name('hazard'),
    'log cumulative hazard'
