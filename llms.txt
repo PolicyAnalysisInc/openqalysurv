@@ -1,0 +1,71 @@
+Provides functions for defining survival distributions,
+modifying/combining them, and generating predictions.
+
+# Package index
+
+## All functions
+
+- [`add_hazards()`](https://policyanalysisinc.github.io/openqalysurv/reference/add_hazards.md)
+  : Add Hazards
+- [`apply_af()`](https://policyanalysisinc.github.io/openqalysurv/reference/apply_af.md)
+  : Apply Acceleration Factor
+- [`apply_hr()`](https://policyanalysisinc.github.io/openqalysurv/reference/apply_hr.md)
+  : Apply Hazard Ratio
+- [`apply_or()`](https://policyanalysisinc.github.io/openqalysurv/reference/apply_or.md)
+  : Apply Odds Ratio
+- [`apply_shift()`](https://policyanalysisinc.github.io/openqalysurv/reference/apply_shift.md)
+  : Apply Fixed Shift in Time
+- [`apply_td_hr()`](https://policyanalysisinc.github.io/openqalysurv/reference/apply_td_hr.md)
+  : Apply Time-Dependent Hazard Ratio
+- [`define_surv_cure()`](https://policyanalysisinc.github.io/openqalysurv/reference/define_surv_cure.md)
+  : Define Parametric Mixture or Non-Mixture Cure Distribution
+- [`define_surv_flexsurv()`](https://policyanalysisinc.github.io/openqalysurv/reference/define_surv_flexsurv.md)
+  : Define Parametric Distribution (flexsurv Parameterization)
+- [`define_surv_fp()`](https://policyanalysisinc.github.io/openqalysurv/reference/define_surv_fp.md)
+  : Define Fractional Polynomial Survival Distribution
+- [`define_surv_func()`](https://policyanalysisinc.github.io/openqalysurv/reference/define_surv_func.md)
+  : Define survival distribution based on a function
+- [`define_surv_km()`](https://policyanalysisinc.github.io/openqalysurv/reference/define_surv_km.md)
+  : Define Kaplan-Meier Distribution
+- [`define_surv_lifereg()`](https://policyanalysisinc.github.io/openqalysurv/reference/define_surv_lifereg.md)
+  : Define Parametric Distribution from SAS PROC LIFEREG Parameters
+- [`define_surv_lifetable()`](https://policyanalysisinc.github.io/openqalysurv/reference/define_surv_lifetable.md)
+  : Define Life-Table Distribution
+- [`define_surv_param()`](https://policyanalysisinc.github.io/openqalysurv/reference/define_surv_param.md)
+  : Define Parametric Distribution
+- [`define_surv_spline()`](https://policyanalysisinc.github.io/openqalysurv/reference/define_surv_spline.md)
+  [`define_spline_survival()`](https://policyanalysisinc.github.io/openqalysurv/reference/define_surv_spline.md)
+  : Define Royston & Parmar Spline Survival Distribution
+- [`define_surv_streg()`](https://policyanalysisinc.github.io/openqalysurv/reference/define_surv_streg.md)
+  : Define Parametric Distribution from Stata streg Parameters
+- [`define_surv_survreg()`](https://policyanalysisinc.github.io/openqalysurv/reference/define_surv_survreg.md)
+  : Define Parametric Distribution from survreg Parameters
+- [`event_prob()`](https://policyanalysisinc.github.io/openqalysurv/reference/event_prob.md)
+  : Evaluate Event Probabilities
+- [`join()`](https://policyanalysisinc.github.io/openqalysurv/reference/join.md)
+  : Join Distributions
+- [`max_hazards()`](https://policyanalysisinc.github.io/openqalysurv/reference/max_hazards.md)
+  : Maximum Hazards
+- [`mix()`](https://policyanalysisinc.github.io/openqalysurv/reference/mix.md)
+  : Mix Two or More Survival Distributions
+- [`set_covariates()`](https://policyanalysisinc.github.io/openqalysurv/reference/set_covariates.md)
+  : Set Covariates of a Survival Model
+- [`surv_prob()`](https://policyanalysisinc.github.io/openqalysurv/reference/surv_prob.md)
+  : Evaluate Survival Probabilities
+- [`surv_quantile()`](https://policyanalysisinc.github.io/openqalysurv/reference/surv_quantile.md)
+  : Evaluate Survival Quantiles
+- [`surv_random()`](https://policyanalysisinc.github.io/openqalysurv/reference/surv_random.md)
+  : Generate Random Survival Times
+
+# Articles
+
+### All vignettes
+
+- [Defining Survival
+  Distributions](https://policyanalysisinc.github.io/openqalysurv/articles/defining-survival-distributions.md):
+- [Generating
+  Predictions](https://policyanalysisinc.github.io/openqalysurv/articles/generating-probabilities.md):
+- [Modifying & Combining
+  Distributions](https://policyanalysisinc.github.io/openqalysurv/articles/modify-combine-survival-distributions.md):
+- [Getting
+  Started](https://policyanalysisinc.github.io/openqalysurv/articles/openqalysurv.md):
