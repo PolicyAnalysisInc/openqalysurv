@@ -36,6 +36,8 @@ Imports:
     ggplot2,
     openqalytools,
     Rcpp
+Remotes:
+    github::PolicyAnalysisInc/openqalytools
 Suggests:
     testthat (>= 3.0.0),
     roxytest,
