@@ -29,7 +29,7 @@ Supported distributions are listed in the table below.\tabular{llll}{
    "weibull" \tab Weibull (AFT) \tab shape, scale \tab  \cr
    "weibullPH" \tab Weibull (PH) \tab shape, scale \tab  \cr
    "gompertz" \tab Gompertz \tab shape, rate \tab  \cr
-   "gamma" \tab Gamma \tab shape, scale \tab  \cr
+   "gamma" \tab Gamma \tab shape, rate (or scale) \tab  \cr
    "gengamma" \tab Generalized Gamma (stable) \tab mu, sigma, Q \tab Described in Prentice (1974) \cr
    "gengamma.orig" \tab Generalized Gamma (original) \tab shape, scale, k \tab Described in Stacy (1962) \cr
    "genf" \tab Generalized F (stable) \tab mu, sigma, Q, P \tab Described in Prentice (1975) \cr

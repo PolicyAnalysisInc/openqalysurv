@@ -24,8 +24,9 @@ Apply a time-dependent hazard ratio to a distribution where the hazard ratio
 can vary across time points.
 }
 \details{
-The \code{time} and \code{hr} vectors are parallel: \code{hr[i]} is the hazard ratio that
-applies at \code{time[i]}. Duplicate (time, hr) pairs are allowed and will be
+The \code{time} and \code{hr} vectors are parallel: \code{hr[i]} applies on the interval
+\verb{[time[i], time[i + 1])}, and the last hazard ratio applies indefinitely
+after the last time point. Duplicate (time, hr) pairs are allowed and will be
 deduplicated. However, conflicting HRs for the same time point (i.e., the same
 time with different HR values) will cause an error.
 
@@ -44,7 +45,7 @@ time-dependent effects.
 }
 \examples{
 
-# Apply time-dependent HR: 0.5 for t in [0,5), 0.8 for t in [5,10)
+# Apply time-dependent HR: 0.5 for t in [0,5), 0.8 for t >= 5
 td_dist <- apply_td_hr(
  define_surv_param("exp", rate = 0.1),
  time = 0:9,

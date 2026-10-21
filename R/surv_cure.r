@@ -43,7 +43,7 @@
 #' | "weibull" | Weibull (AFT) | shape, scale | |
 #' | "weibullPH" | Weibull (PH) | shape, scale | |
 #' | "gompertz" | Gompertz | shape, rate | |
-#' | "gamma" | Gamma | shape, scale | |
+#' | "gamma" | Gamma | shape, rate (or scale) | |
 #' | "gengamma" | Generalized Gamma (stable) | mu, sigma, Q | Parameterization from Prentice (1974) |
 #' | "gengamma.orig" | Generalized Gamma (original) | shape, scale, k | Original parameterization from Stacy (1962) |
 #' | "genf" | Generalized F (stable) | mu, sigma, Q, P | Stable reparameterization from Prentice (1975) |

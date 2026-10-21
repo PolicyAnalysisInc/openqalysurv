@@ -27,6 +27,36 @@
 #'  fixed = TRUE
 #' )
 #'
+#' # Gamma: shape + rate, shape + scale, and positional arguments agree
+#' gamma_ref <- pgamma(1, shape = 2, rate = 1, lower.tail = FALSE)
+#' dist_gamma_rate <- define_surv_param('gamma', shape = 2, rate = 1)
+#' dist_gamma_scale <- define_surv_param('gamma', shape = 2, scale = 1)
+#' dist_gamma_pos <- define_surv_param('gamma', 2, 1)
+#' expect_equal(dist_gamma_rate$parameters, list(shape = 2, rate = 1))
+#' expect_equal(dist_gamma_scale$parameters, list(shape = 2, rate = 1))
+#' expect_equal(dist_gamma_pos$parameters, list(shape = 2, rate = 1))
+#' expect_equal(surv_prob(dist_gamma_rate, 1), gamma_ref, tolerance = 1e-7)
+#' expect_equal(surv_prob(dist_gamma_scale, 1), gamma_ref, tolerance = 1e-7)
+#' expect_equal(surv_prob(dist_gamma_pos, 1), gamma_ref, tolerance = 1e-7)
+#'
+#' # Gamma: rate and scale given together must be reciprocals
+#' expect_equal(
+#'  define_surv_param('gamma', shape = 2, rate = 0.5, scale = 2)$parameters,
+#'  list(shape = 2, rate = 0.5)
+#' )
+#' expect_error(
+#'  define_surv_param('gamma', shape = 2, rate = 1, scale = 2),
+#'  'Error defining gamma distribution, "rate" and "scale" must be reciprocals (rate = 1 / scale) when both are provided.',
+#'  fixed = TRUE
+#' )
+#'
+#' # Gamma: print shows rate
+#' expect_output(
+#'  print(dist_gamma_scale),
+#'  'A gamma distribution (shape = 2, rate = 1).',
+#'  fixed = TRUE
+#' )
+#'
 #'
 #' @examples
 #'
@@ -174,7 +204,52 @@ get_flexsurv_dist_params <- function(dist_name) {
     all_param_names <- names(formals(dist))
     dist_param_names <- setdiff(all_param_names, c('q', 'lower.tail', 'log.p'))
 
+    # Gamma is parameterized by shape and rate, scale is accepted as an alias
+    if (dist_name == 'gamma') {
+        dist_param_names <- setdiff(dist_param_names, 'scale')
+    }
+
     dist_param_names
+}
+
+#' @tests
+#' expect_equal(
+#'  convert_gamma_scale_to_rate(list(shape = 2, scale = 4)),
+#'  list(shape = 2, rate = 0.25)
+#' )
+#' expect_equal(
+#'  convert_gamma_scale_to_rate(list(shape = 2, rate = 0.25, scale = 4)),
+#'  list(shape = 2, rate = 0.25)
+#' )
+#' expect_error(
+#'  convert_gamma_scale_to_rate(list(shape = 2, rate = 1, scale = 4)),
+#'  'Error defining gamma distribution, "rate" and "scale" must be reciprocals (rate = 1 / scale) when both are provided.',
+#'  fixed = TRUE
+#' )
+#' expect_equal(
+#'  convert_gamma_scale_to_rate(list(2, 1)),
+#'  list(2, 1)
+#' )
+convert_gamma_scale_to_rate <- function(args) {
+
+    if (!'scale' %in% names(args)) {
+        return(args)
+    }
+
+    scale <- args[['scale']]
+
+    if ('rate' %in% names(args)) {
+        rate <- args[['rate']]
+        if (abs(rate[1] * scale[1] - 1) > 1e-8) {
+            err <- get_and_populate_message('gamma_rate_scale_mismatch')
+            stop(err, call. = show_call_error())
+        }
+    } else {
+        args[['rate']] <- 1 / scale
+    }
+
+    args[['scale']] <- NULL
+    args
 }
 
 #' @tests
@@ -187,6 +262,11 @@ get_flexsurv_dist_params <- function(dist_name) {
 #' )
 #' 
 get_dist_params_from_args <- function(distribution, args) {
+
+  # Gamma may be specified with scale instead of rate
+  if (distribution == 'gamma') {
+    args <- convert_gamma_scale_to_rate(args)
+  }
 
   # Extract parameter names
   param_names <- get_flexsurv_dist_params(distribution)

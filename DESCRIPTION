@@ -1,6 +1,6 @@
 Package: openqalysurv
 Title: A Grammar of Survival Operations for CE Models
-Version: 1.0.0
+Version: 1.0.0.9000
 Authors@R: c(
     person(given = "Jordan",
            family = "Amdahl",

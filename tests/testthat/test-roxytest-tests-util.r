@@ -2,14 +2,23 @@
 
 # File R/util.r: @tests
 
-test_that("Function is_surv_dist() @ L6", {
+test_that("Function is_surv_dist() @ L26", {
   expect_equal(is_surv_dist(create_list_object('flexsurvreg')), TRUE)
   expect_equal(is_surv_dist(create_list_object('tibble')), FALSE)
   expect_equal(is_surv_dist(create_list_object(c('foo', 'surv_km'))), TRUE)
+  
+  # Raw flexsurvreg fit is a valid distribution, data frame is not
+  fit_exp <- flexsurv::flexsurvreg(
+   survival::Surv(time, status == 2) ~ 1,
+   data = survival::lung,
+   dist = 'exp'
+  )
+  expect_equal(is_surv_dist(fit_exp), TRUE)
+  expect_equal(is_surv_dist(data.frame(time = 1:3)), FALSE)
 })
 
 
-test_that("Function get_and_populate_message() @ L29", {
+test_that("Function get_and_populate_message() @ L49", {
   expect_equal(
    get_and_populate_message('missing_parameters', dist = 'a', params = 'b'),
    'Error defining a distribution, parameters missing from function call: b.'
@@ -17,7 +26,7 @@ test_that("Function get_and_populate_message() @ L29", {
 })
 
 
-test_that("Function truncate_param() @ L56", {
+test_that("Function truncate_param() @ L76", {
   expect_equal(
    truncate_param('foo', c(1)),
    1
@@ -41,7 +50,7 @@ test_that("Function truncate_param() @ L56", {
 })
 
 
-test_that("Function check_times() @ L97", {
+test_that("Function check_times() @ L117", {
   expect_error(
    check_times(c(0,1,2,3), '', ''),
    NA
@@ -61,7 +70,7 @@ test_that("Function check_times() @ L97", {
 })
 
 
-test_that("Function parse_percent_string_to_number() @ L145", {
+test_that("Function parse_percent_string_to_number() @ L165", {
   expect_equal(
    parse_percent_string_to_number(c('45%', '1%', '0.3434%')),
    c(0.45, 0.01, 0.003434)

@@ -2,7 +2,7 @@
 
 # File R/surv_parametric.r: @tests
 
-test_that("Function define_surv_param() @ L36", {
+test_that("Function define_surv_param() @ L66", {
   dist1 <- define_surv_param(distribution = "exp", rate = 0.05)
   expect_equal(class(dist1), c('surv_parametric', 'surv_dist'))
   expect_equal(dist1$distribution, 'exp')
@@ -13,10 +13,40 @@ test_that("Function define_surv_param() @ L36", {
    'Error defining Weibull (AFT) distribution, parameters missing from function call: "scale".',
    fixed = TRUE
   )
+  
+  # Gamma: shape + rate, shape + scale, and positional arguments agree
+  gamma_ref <- pgamma(1, shape = 2, rate = 1, lower.tail = FALSE)
+  dist_gamma_rate <- define_surv_param('gamma', shape = 2, rate = 1)
+  dist_gamma_scale <- define_surv_param('gamma', shape = 2, scale = 1)
+  dist_gamma_pos <- define_surv_param('gamma', 2, 1)
+  expect_equal(dist_gamma_rate$parameters, list(shape = 2, rate = 1))
+  expect_equal(dist_gamma_scale$parameters, list(shape = 2, rate = 1))
+  expect_equal(dist_gamma_pos$parameters, list(shape = 2, rate = 1))
+  expect_equal(surv_prob(dist_gamma_rate, 1), gamma_ref, tolerance = 1e-7)
+  expect_equal(surv_prob(dist_gamma_scale, 1), gamma_ref, tolerance = 1e-7)
+  expect_equal(surv_prob(dist_gamma_pos, 1), gamma_ref, tolerance = 1e-7)
+  
+  # Gamma: rate and scale given together must be reciprocals
+  expect_equal(
+   define_surv_param('gamma', shape = 2, rate = 0.5, scale = 2)$parameters,
+   list(shape = 2, rate = 0.5)
+  )
+  expect_error(
+   define_surv_param('gamma', shape = 2, rate = 1, scale = 2),
+   'Error defining gamma distribution, "rate" and "scale" must be reciprocals (rate = 1 / scale) when both are provided.',
+   fixed = TRUE
+  )
+  
+  # Gamma: print shows rate
+  expect_output(
+   print(dist_gamma_scale),
+   'A gamma distribution (shape = 2, rate = 1).',
+   fixed = TRUE
+  )
 })
 
 
-test_that("Function print.surv_parametric() @ L56", {
+test_that("Function print.surv_parametric() @ L86", {
   surv_dist1 <- define_surv_param('weibull', shape = 1.2438, scale = 20.3984)
   expect_output(
    print(surv_dist1),
@@ -33,7 +63,7 @@ test_that("Function print.surv_parametric() @ L56", {
 })
 
 
-test_that("Function surv_prob.surv_parametric() @ L85", {
+test_that("Function surv_prob.surv_parametric() @ L115", {
   dist1 <- define_surv_param('exp', rate = 0.12)
   expect_equal(
    surv_prob(dist1, c(0, 1, 2, 3)),
@@ -50,7 +80,7 @@ test_that("Function surv_prob.surv_parametric() @ L85", {
 })
 
 
-test_that("Function surv_quantile.surv_parametric() @ L135", {
+test_that("Function surv_quantile.surv_parametric() @ L165", {
   # Exponential matches R builtin
   dist_exp <- define_surv_param('exp', rate = 0.12)
   expect_equal(
@@ -78,20 +108,20 @@ test_that("Function surv_quantile.surv_parametric() @ L135", {
 })
 
 
-test_that("Function get_flexsurv_dist() @ L149", {
+test_that("Function get_flexsurv_dist() @ L179", {
   expect_equal(get_flexsurv_dist('weibull'), pweibull)
   expect_equal(get_flexsurv_dist('genf'), pgenf)
   expect_equal(get_flexsurv_dist('llogis'), pllogis)
 })
 
 
-test_that("Function get_flexsurv_quantile() @ L156", {
+test_that("Function get_flexsurv_quantile() @ L186", {
   expect_equal(get_flexsurv_quantile('weibull'), qweibull)
   expect_equal(get_flexsurv_quantile('exp'), qexp)
 })
 
 
-test_that("Function get_flexsurv_dist_params() @ L172", {
+test_that("Function get_flexsurv_dist_params() @ L202", {
   expect_equal(
    get_flexsurv_dist_params('weibull'), c('shape', 'scale')
   )
@@ -106,7 +136,28 @@ test_that("Function get_flexsurv_dist_params() @ L172", {
 })
 
 
-test_that("Function get_dist_params_from_args() @ L189", {
+test_that("Function convert_gamma_scale_to_rate() @ L233", {
+  expect_equal(
+   convert_gamma_scale_to_rate(list(shape = 2, scale = 4)),
+   list(shape = 2, rate = 0.25)
+  )
+  expect_equal(
+   convert_gamma_scale_to_rate(list(shape = 2, rate = 0.25, scale = 4)),
+   list(shape = 2, rate = 0.25)
+  )
+  expect_error(
+   convert_gamma_scale_to_rate(list(shape = 2, rate = 1, scale = 4)),
+   'Error defining gamma distribution, "rate" and "scale" must be reciprocals (rate = 1 / scale) when both are provided.',
+   fixed = TRUE
+  )
+  expect_equal(
+   convert_gamma_scale_to_rate(list(2, 1)),
+   list(2, 1)
+  )
+})
+
+
+test_that("Function get_dist_params_from_args() @ L264", {
   expect_equal(
    get_dist_params_from_args(
        'weibull',
@@ -117,7 +168,7 @@ test_that("Function get_dist_params_from_args() @ L189", {
 })
 
 
-test_that("Function get_dist_param_from_args() @ L216", {
+test_that("Function get_dist_param_from_args() @ L296", {
   expect_equal(
    get_dist_param_from_args(
        'scale',
@@ -128,7 +179,7 @@ test_that("Function get_dist_param_from_args() @ L216", {
 })
 
 
-test_that("Function get_dist_display_name() @ L234", {
+test_that("Function get_dist_display_name() @ L314", {
   expect_equal(
    get_dist_display_name('foo'),
    'foo'
@@ -141,7 +192,7 @@ test_that("Function get_dist_display_name() @ L234", {
 })
 
 
-test_that("Function check_param_names() @ L249", {
+test_that("Function check_param_names() @ L329", {
   expect_error(
    check_param_names(list(shape=1,foo=2), 'weibullPH'), 
    'Error defining Weibull (PH) distribution, parameters missing from function call: "scale".',

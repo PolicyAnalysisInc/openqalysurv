@@ -16,8 +16,9 @@
 #' @return A `surv_td_ph` object if length(hr) > 1, otherwise delegates to apply_hr.
 #'
 #' @details
-#' The `time` and `hr` vectors are parallel: `hr[i]` is the hazard ratio that
-#' applies at `time[i]`. Duplicate (time, hr) pairs are allowed and will be
+#' The `time` and `hr` vectors are parallel: `hr[i]` applies on the interval
+#' `[time[i], time[i + 1])`, and the last hazard ratio applies indefinitely
+#' after the last time point. Duplicate (time, hr) pairs are allowed and will be
 #' deduplicated. However, conflicting HRs for the same time point (i.e., the same
 #' time with different HR values) will cause an error.
 #'
@@ -36,7 +37,7 @@
 #'
 #' @examples
 #'
-#' # Apply time-dependent HR: 0.5 for t in [0,5), 0.8 for t in [5,10)
+#' # Apply time-dependent HR: 0.5 for t in [0,5), 0.8 for t >= 5
 #' td_dist <- apply_td_hr(
 #'  define_surv_param("exp", rate = 0.1),
 #'  time = 0:9,
@@ -193,11 +194,18 @@ apply_td_hr <- function(dist, time, hr, log_hr = FALSE) {
 #' td_dist2 <- apply_td_hr(dist1, 0:2, c(0.5, 0.8, 1.2))
 #' expect_equal(surv_prob(td_dist2, 0), 1)
 #'
-#' # Error when time exceeds max stored time
-#' expect_error(
-#'  surv_prob(td_dist2, 5),
-#'  'Error calculating survival probabilities, query time exceeds maximum stored time.',
-#'  fixed = TRUE
+#' # Past the last stored time the last HR continues indefinitely
+#' join_past <- join(apply_hr(dist1, 0.5), 1, apply_hr(dist1, 0.8), 2, apply_hr(dist1, 1.2))
+#' test_past <- c(2, 3, 5, 10)
+#' expect_equal(
+#'  surv_prob(td_dist2, test_past),
+#'  surv_prob(join_past, test_past),
+#'  tolerance = 1e-10
+#' )
+#' expect_equal(
+#'  surv_prob(apply_td_hr(dist1, 0, 0.5), 3),
+#'  surv_prob(apply_hr(dist1, 0.5), 3),
+#'  tolerance = 1e-10
 #' )
 #'
 #' # CORE VALIDATION: td_hr should match join + apply_hr for piecewise constant HR
@@ -285,14 +293,6 @@ apply_td_hr <- function(dist, time, hr, log_hr = FALSE) {
 surv_prob.surv_td_ph <- function(x, time, ...) {
     check_times(time, 'calculating survival probabilities', 'time')
 
-    # Check that query times don't exceed max stored time
-    max_query <- max(time)
-    max_stored <- max(x$time)
-    if (max_query > max_stored) {
-        err <- get_and_populate_message('apply_td_hr_time_exceeds_stored')
-        stop(err, call. = show_call_error())
-    }
-
     # Get baseline log-survival at stored time points
     log_surv_stored <- log(surv_prob(x$dist, x$time, ...))
 
@@ -313,6 +313,14 @@ surv_prob.surv_td_ph <- function(x, time, ...) {
 #' probs <- c(0.9, 0.5, 0.2)
 #' times <- surv_quantile(td_dist, probs)
 #' expect_equal(surv_prob(td_dist, times), probs, tolerance = 1e-4)
+#'
+#' # Roundtrip across HR change points, including past the last stored time
+#' dist_cp <- define_surv_param('weibull', shape = 1.5, scale = 10)
+#' td_cp <- apply_td_hr(dist_cp, c(0, 2, 5), c(0.5, 0.8, 1.2))
+#' query_cp <- c(1, 3, 8, 20)
+#' probs_cp <- surv_prob(td_cp, query_cp)
+#' expect_equal(surv_quantile(td_cp, probs_cp), query_cp, tolerance = 1e-6)
+#' expect_equal(surv_prob(td_cp, surv_quantile(td_cp, probs_cp)), probs_cp, tolerance = 1e-8)
 #'
 #' # Edge cases
 #' expect_equal(surv_quantile(td_dist, 1), 0)
@@ -342,12 +350,12 @@ surv_quantile.surv_td_ph <- function(x, probs, ...) {
         # Find the interval
         for (k in seq_len(n - 1)) {
             if (p >= stored_surv[k + 1]) {
-                # p is in interval [t_k, t_{k+1})
-                if (x$hr[k + 1] == 0) next
+                # p is in interval [t_k, t_{k+1}), where hr[k] applies
+                if (x$hr[k] == 0) next
                 # S_td(t) = S_td(t_k) * (S_base(t)/S_base(t_k))^hr_k
                 # Invert: S_base(t) = S_base(t_k) * (p/S_td(t_k))^(1/hr_k)
                 s_base_at_tk <- surv_prob(x$dist, x$time[k], ...)
-                p_base <- s_base_at_tk * (p / stored_surv[k])^(1/x$hr[k + 1])
+                p_base <- s_base_at_tk * (p / stored_surv[k])^(1/x$hr[k])
                 return(surv_quantile(x$dist, p_base, ...))
             }
         }

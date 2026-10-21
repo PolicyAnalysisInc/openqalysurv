@@ -55,7 +55,7 @@ NumericVector compute_td_surv_prob(
         double cum_log_surv = cum_weighted[interval_idx];
 
         // Partial interval contribution (if t is between stored points)
-        if (t > stored_time[interval_idx] && interval_idx < n_stored - 1) {
+        if (t > stored_time[interval_idx]) {
             double partial_log_diff = log_surv_query[j] - log_surv_stored[interval_idx];
             cum_log_surv += hr[interval_idx] * partial_log_diff;
         }

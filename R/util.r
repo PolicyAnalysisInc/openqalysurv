@@ -1,8 +1,28 @@
+#' Check for a Survival Distribution
+#'
+#' Checks whether an object can be evaluated by [surv_prob()], i.e. it is a
+#' survival distribution from openqalysurv, a `flexsurvreg` fit, or a
+#' `survfit` object.
+#'
+#' @param x an object to check
+#'
+#' @return `TRUE` if `x` is a valid survival distribution, otherwise `FALSE`.
+#'
+#' @export
 #' @tests
-#' 
+#'
 #' expect_equal(is_surv_dist(create_list_object('flexsurvreg')), TRUE)
 #' expect_equal(is_surv_dist(create_list_object('tibble')), FALSE)
 #' expect_equal(is_surv_dist(create_list_object(c('foo', 'surv_km'))), TRUE)
+#'
+#' # Raw flexsurvreg fit is a valid distribution, data frame is not
+#' fit_exp <- flexsurv::flexsurvreg(
+#'  survival::Surv(time, status == 2) ~ 1,
+#'  data = survival::lung,
+#'  dist = 'exp'
+#' )
+#' expect_equal(is_surv_dist(fit_exp), TRUE)
+#' expect_equal(is_surv_dist(data.frame(time = 1:3)), FALSE)
 is_surv_dist <- function(x) {
   res <- try(suppressWarnings(surv_prob(x, 1)), silent = TRUE)
   is_error <- inherits(res, 'try-error')

@@ -1,6 +1,7 @@
 # Error/Warning messages
 messages <- list(
     missing_parameters = 'Error defining {dist} distribution, parameters missing from function call: {params}.',
+    gamma_rate_scale_mismatch = 'Error defining gamma distribution, "rate" and "scale" must be reciprocals (rate = 1 / scale) when both are provided.',
     invalid_theta = 'Error defining cure model, cure fraction (theta) must be in range [0-1].',
     truncated_vector = 'Parameter {param} was length > 1 and only the first element will be used.',
     n_spline_params = 'Error defining restricted cubic spline distribution, must provide at least two parameter values followed by a matching number of knot times.',
@@ -30,7 +31,6 @@ messages <- list(
     apply_td_hr_invalid_hr = 'Error applying time-dependent hazard ratio, "hr" cannot contain negative values.',
     apply_td_hr_length_mismatch = 'Error applying time-dependent hazard ratio, "time" and "hr" must have the same length.',
     apply_td_hr_conflicting_hr = 'Error applying time-dependent hazard ratio, conflicting hazard ratios found for the same time value.',
-    apply_td_hr_time_exceeds_stored = 'Error calculating survival probabilities, query time exceeds maximum stored time.',
     apply_af_wrong_type_dist = 'Error applying acceleration factor, invalid survival distribution provided.',
     apply_af_wrong_type_af = 'Error applying acceleration factor, "af" must be numeric.',
     apply_af_missing_af = 'Error applying acceleration factor, "af" cannot be NA.',

@@ -2,7 +2,7 @@
 
 # File R/apply_td_hr.r: @tests
 
-test_that("Function apply_td_hr() @ L104", {
+test_that("Function apply_td_hr() @ L105", {
   dist1 <- define_surv_param("exp", rate = 0.1)
   
   # Delegation to apply_hr when length(hr) == 1
@@ -63,7 +63,7 @@ test_that("Function apply_td_hr() @ L104", {
 })
 
 
-test_that("Function surv_prob.surv_td_ph() @ L285", {
+test_that("Function surv_prob.surv_td_ph() @ L293", {
   dist1 <- define_surv_param("exp", rate = 0.1)
   
   # Constant HR should match apply_hr
@@ -87,11 +87,18 @@ test_that("Function surv_prob.surv_td_ph() @ L285", {
   td_dist2 <- apply_td_hr(dist1, 0:2, c(0.5, 0.8, 1.2))
   expect_equal(surv_prob(td_dist2, 0), 1)
   
-  # Error when time exceeds max stored time
-  expect_error(
-   surv_prob(td_dist2, 5),
-   'Error calculating survival probabilities, query time exceeds maximum stored time.',
-   fixed = TRUE
+  # Past the last stored time the last HR continues indefinitely
+  join_past <- join(apply_hr(dist1, 0.5), 1, apply_hr(dist1, 0.8), 2, apply_hr(dist1, 1.2))
+  test_past <- c(2, 3, 5, 10)
+  expect_equal(
+   surv_prob(td_dist2, test_past),
+   surv_prob(join_past, test_past),
+   tolerance = 1e-10
+  )
+  expect_equal(
+   surv_prob(apply_td_hr(dist1, 0, 0.5), 3),
+   surv_prob(apply_hr(dist1, 0.5), 3),
+   tolerance = 1e-10
   )
   
   # CORE VALIDATION: td_hr should match join + apply_hr for piecewise constant HR
@@ -178,7 +185,7 @@ test_that("Function surv_prob.surv_td_ph() @ L285", {
 })
 
 
-test_that("Function surv_quantile.surv_td_ph() @ L321", {
+test_that("Function surv_quantile.surv_td_ph() @ L329", {
   dist1 <- define_surv_param('exp', rate = 0.1)
   
   # Roundtrip for td_ph (use high probs that resolve within stored range)
@@ -187,13 +194,21 @@ test_that("Function surv_quantile.surv_td_ph() @ L321", {
   times <- surv_quantile(td_dist, probs)
   expect_equal(surv_prob(td_dist, times), probs, tolerance = 1e-4)
   
+  # Roundtrip across HR change points, including past the last stored time
+  dist_cp <- define_surv_param('weibull', shape = 1.5, scale = 10)
+  td_cp <- apply_td_hr(dist_cp, c(0, 2, 5), c(0.5, 0.8, 1.2))
+  query_cp <- c(1, 3, 8, 20)
+  probs_cp <- surv_prob(td_cp, query_cp)
+  expect_equal(surv_quantile(td_cp, probs_cp), query_cp, tolerance = 1e-6)
+  expect_equal(surv_prob(td_cp, surv_quantile(td_cp, probs_cp)), probs_cp, tolerance = 1e-8)
+  
   # Edge cases
   expect_equal(surv_quantile(td_dist, 1), 0)
   expect_equal(surv_quantile(td_dist, 0), Inf)
 })
 
 
-test_that("Function print.surv_td_ph() @ L369", {
+test_that("Function print.surv_td_ph() @ L377", {
   dist1 <- apply_td_hr(define_surv_param('exp', rate = 0.1), 0:2, c(0.5, 0.8, 1.2))
   expect_output(print(dist1), 'time-dependent proportional hazards')
 })
