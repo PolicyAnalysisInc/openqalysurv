@@ -42,6 +42,8 @@ modifying/combining them, and generating predictions.
   : Define Parametric Distribution from survreg Parameters
 - [`event_prob()`](https://policyanalysisinc.github.io/openqalysurv/reference/event_prob.md)
   : Evaluate Event Probabilities
+- [`is_surv_dist()`](https://policyanalysisinc.github.io/openqalysurv/reference/is_surv_dist.md)
+  : Check for a Survival Distribution
 - [`join()`](https://policyanalysisinc.github.io/openqalysurv/reference/join.md)
   : Join Distributions
 - [`max_hazards()`](https://policyanalysisinc.github.io/openqalysurv/reference/max_hazards.md)

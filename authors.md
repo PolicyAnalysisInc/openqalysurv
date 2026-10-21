@@ -12,13 +12,13 @@ Source:
 [`DESCRIPTION`](https://github.com/PolicyAnalysisInc/openqalysurv/blob/master/DESCRIPTION)
 
 Amdahl J (2026). *openqalysurv: A Grammar of Survival Operations for CE
-Models*. R package version 1.0.0,
+Models*. R package version 1.0.0.9000,
 <https://github.com/PolicyAnalysisInc/openqalysurv>.
 
     @Manual{,
       title = {openqalysurv: A Grammar of Survival Operations for CE Models},
       author = {Jordan Amdahl},
       year = {2026},
-      note = {R package version 1.0.0},
+      note = {R package version 1.0.0.9000},
       url = {https://github.com/PolicyAnalysisInc/openqalysurv},
     }

@@ -37,7 +37,7 @@ Supported distributions are listed in the table below.
 | "weibull" | Weibull (AFT) | shape, scale |  |
 | "weibullPH" | Weibull (PH) | shape, scale |  |
 | "gompertz" | Gompertz | shape, rate |  |
-| "gamma" | Gamma | shape, scale |  |
+| "gamma" | Gamma | shape, rate (or scale) |  |
 | "gengamma" | Generalized Gamma (stable) | mu, sigma, Q | Described in Prentice (1974) |
 | "gengamma.orig" | Generalized Gamma (original) | shape, scale, k | Described in Stacy (1962) |
 | "genf" | Generalized F (stable) | mu, sigma, Q, P | Described in Prentice (1975) |
