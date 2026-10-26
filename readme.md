@@ -1,9 +1,9 @@
 # openqalysurv
 
 [![CircleCI build
-status](https://circleci.com/gh/PolicyAnalysisInc/openqalysurv.svg?style=svg)](https://circleci.com/gh/PolicyAnalysisInc/openqalysurv)
+status](https://circleci.com/gh/PolicyAnalysisInc/openqalysurv.svg?style=svg)](https://app.circleci.com/pipelines/github/PolicyAnalysisInc/openqalysurv)
 [![Codecov test
-coverage](https://codecov.io/gh/PolicyAnalysisInc/openqalysurv/branch/master/graph/badge.svg)](https://codecov.io/gh/PolicyAnalysisInc/openqalysurv?branch=master)
+coverage](https://codecov.io/gh/PolicyAnalysisInc/openqalysurv/branch/master/graph/badge.svg)](https://app.codecov.io/gh/PolicyAnalysisInc/openqalysurv?branch=master)
 
 ## Overview
 
@@ -35,11 +35,9 @@ remotes::install_github("PolicyAnalysisInc/openqalysurv")
 - Custom Functions:
   [`define_surv_func()`](https://policyanalysisinc.github.io/openqalysurv/reference/define_surv_func.md)
 - Full support for models estimated using
-  [flexsurv](https://cran.r-project.org/web/packages/flexsurv/index.html)
-  package
+  [flexsurv](https://CRAN.R-project.org/package=flexsurv) package
 - Partial support for KMs & Cox Models estimated using
-  [survival](https://cran.r-project.org/web/packages/survival/index.html)
-  package
+  [survival](https://CRAN.R-project.org/package=survival) package
 
 ## Modifying Survival Distributions
 
@@ -69,3 +67,8 @@ remotes::install_github("PolicyAnalysisInc/openqalysurv")
   [`surv_prob()`](https://policyanalysisinc.github.io/openqalysurv/reference/surv_prob.md)
 - Generate event probabilities:
   [`event_prob()`](https://policyanalysisinc.github.io/openqalysurv/reference/event_prob.md)
+
+## License
+
+Copyright (C) 2026 Avalere Health. Licensed under the GNU General Public
+License v3.0; see `LICENSE.md`.

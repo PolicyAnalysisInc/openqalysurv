@@ -8,8 +8,7 @@ of survival distributions of different types.
 The `define_surv_param` function allows you to define a parametric
 survival model with specified distribution and parameter values.
 Parameterization is based on the
-[flexsurv](https://cran.r-project.org/web/packages/flexsurv/index.html)
-package.
+[flexsurv](https://CRAN.R-project.org/package=flexsurv) package.
 
 ``` r
 

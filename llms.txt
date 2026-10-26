@@ -40,6 +40,8 @@ modifying/combining them, and generating predictions.
   : Define Parametric Distribution from Stata streg Parameters
 - [`define_surv_survreg()`](https://policyanalysisinc.github.io/openqalysurv/reference/define_surv_survreg.md)
   : Define Parametric Distribution from survreg Parameters
+- [`define_surv_table()`](https://policyanalysisinc.github.io/openqalysurv/reference/define_surv_table.md)
+  : Define Survival Table Distribution
 - [`event_prob()`](https://policyanalysisinc.github.io/openqalysurv/reference/event_prob.md)
   : Evaluate Event Probabilities
 - [`is_surv_dist()`](https://policyanalysisinc.github.io/openqalysurv/reference/is_surv_dist.md)

@@ -23,7 +23,7 @@ define_surv_km(x, time_col = "time", surv_col = "survival")
 
 - surv_col:
 
-  the name of the time column (defaults to `survival`)
+  the name of the survival column (defaults to `survival`)
 
 ## Value
 

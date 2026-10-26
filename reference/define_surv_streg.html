@@ -11,7 +11,7 @@ AFT or PH parameterization to flexsurv's native parameterization."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">openqalysurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -84,7 +84,7 @@ metric was used to fit the model.</p></dd>
 
 <div class="section">
 <h3 id="aft-metric-parameters">AFT metric parameters<a class="anchor" aria-label="anchor" href="#aft-metric-parameters"></a></h3>
-<table class="table table"><tr><td><strong>Distribution</strong></td><td><strong>Parameters</strong></td><td><strong>Conversion</strong></td></tr><tr><td>exponential</td><td><code>cons</code></td><td><code>rate = exp(-cons)</code></td></tr><tr><td>weibull</td><td><code>cons</code>, <code>ln_p</code></td><td><code>shape = exp(ln_p)</code>, <code>scale = exp(cons)</code></td></tr><tr><td>lognormal</td><td><code>cons</code>, <code>sigma</code></td><td><code>meanlog = cons</code>, <code>sdlog = sigma</code></td></tr><tr><td>loglogistic</td><td><code>cons</code>, <code>gamma</code></td><td><code>shape = gamma</code>, <code>scale = exp(cons)</code></td></tr><tr><td>ggamma</td><td><code>cons</code>, <code>sigma</code>, <code>kappa</code></td><td><code>mu = cons</code>, <code>sigma = sigma</code>, <code>Q = kappa</code></td></tr></table></div>
+<table class="table table"><tr><td><strong>Distribution</strong></td><td><strong>Parameters</strong></td><td><strong>Conversion</strong></td></tr><tr><td>exponential</td><td><code>cons</code></td><td><code>rate = exp(-cons)</code></td></tr><tr><td>weibull</td><td><code>cons</code>, <code>ln_p</code></td><td><code>shape = exp(ln_p)</code>, <code>scale = exp(cons)</code></td></tr><tr><td>lognormal</td><td><code>cons</code>, <code>sigma</code></td><td><code>meanlog = cons</code>, <code>sdlog = sigma</code></td></tr><tr><td>loglogistic</td><td><code>cons</code>, <code>gamma</code></td><td><code>shape = 1 / gamma</code>, <code>scale = exp(cons)</code></td></tr><tr><td>ggamma</td><td><code>cons</code>, <code>sigma</code>, <code>kappa</code></td><td><code>mu = cons</code>, <code>sigma = sigma</code>, <code>Q = kappa</code></td></tr></table></div>
 
 <div class="section">
 <h3 id="ph-metric-parameters">PH metric parameters<a class="anchor" aria-label="anchor" href="#ph-metric-parameters"></a></h3>
@@ -100,7 +100,7 @@ metric was used to fit the model.</p></dd>
 <li><p><strong>Weibull</strong>: <code>S(t) = exp(-(t / exp(cons))^exp(ln_p))</code></p></li>
 <li><p><strong>Lognormal</strong>: <code>S(t) = 1 - Phi((log(t) - cons) / sigma)</code> where
 <code>Phi()</code> is the standard normal CDF</p></li>
-<li><p><strong>Log-logistic</strong>: <code>S(t) = 1 / (1 + (t / exp(cons))^gamma)</code></p></li>
+<li><p><strong>Log-logistic</strong>: <code>S(t) = 1 / (1 + (t / exp(cons))^(1 / gamma))</code></p></li>
 <li><p><strong>Generalized gamma</strong>: No simple closed form;
 <code>mu = cons</code>, <code>sigma = sigma</code>, <code>Q = kappa</code></p></li>
 </ul></div>

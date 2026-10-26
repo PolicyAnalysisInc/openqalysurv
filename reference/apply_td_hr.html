@@ -9,7 +9,7 @@ can vary across time points."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">openqalysurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -79,10 +79,13 @@ hazard ratios are on log scale</p></dd>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The <code>time</code> and <code>hr</code> vectors are parallel: <code>hr[i]</code> applies on the interval
-<code>[time[i], time[i + 1])</code>, and the last hazard ratio applies indefinitely
-after the last time point. Duplicate (time, hr) pairs are allowed and will be
-deduplicated. However, conflicting HRs for the same time point (i.e., the same
-time with different HR values) will cause an error.</p>
+<code>(time[i - 1], time[i]]</code>, with <code>time[0] = 0</code>, and the last hazard ratio
+continues after the last time point. With <code>time</code> set to the end of each
+cycle (for example <code>cycle</code>), cycle k is given <code>hr[k]</code>. A hazard ratio whose
+interval has zero length (for example <code>hr[1]</code> when <code>time[1] = 0</code>) covers no
+time. Duplicate (time, hr) pairs are allowed and will be deduplicated.
+However, conflicting HRs for the same time point (i.e., the same time with
+different HR values) will cause an error.</p>
 <p><strong>Interaction with apply_af:</strong></p>
 <p>(1) Composition order affects which HR applies at a given query time:</p><ul><li><p><code>apply_af(apply_td_hr(dist, time, hr), af)</code>: HR intervals are in accelerated time</p></li>
 <li><p><code>apply_td_hr(apply_af(dist, af), time, hr)</code>: HR intervals are in query time</p></li>
@@ -95,10 +98,10 @@ time-dependent effects.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Apply time-dependent HR: 0.5 for t in [0,5), 0.8 for t &gt;= 5</span></span></span>
+<span class="r-in"><span><span class="co"># Apply time-dependent HR: 0.5 in cycles 1-5 (t in (0, 5]), 0.8 after</span></span></span>
 <span class="r-in"><span><span class="va">td_dist</span> <span class="op">&lt;-</span> <span class="fu">apply_td_hr</span><span class="op">(</span></span></span>
 <span class="r-in"><span> <span class="fu"><a href="define_surv_param.html">define_surv_param</a></span><span class="op">(</span><span class="st">"exp"</span>, rate <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span> time <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">9</span>,</span></span>
+<span class="r-in"><span> time <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>,</span></span>
 <span class="r-in"><span> hr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.8</span>, <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>

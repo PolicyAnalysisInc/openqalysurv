@@ -37,10 +37,13 @@ apply_hr.
 ## Details
 
 The `time` and `hr` vectors are parallel: `hr[i]` applies on the
-interval `[time[i], time[i + 1])`, and the last hazard ratio applies
-indefinitely after the last time point. Duplicate (time, hr) pairs are
-allowed and will be deduplicated. However, conflicting HRs for the same
-time point (i.e., the same time with different HR values) will cause an
+interval `(time[i - 1], time[i]]`, with `time[0] = 0`, and the last
+hazard ratio continues after the last time point. With `time` set to the
+end of each cycle (for example `cycle`), cycle k is given `hr[k]`. A
+hazard ratio whose interval has zero length (for example `hr[1]` when
+`time[1] = 0`) covers no time. Duplicate (time, hr) pairs are allowed
+and will be deduplicated. However, conflicting HRs for the same time
+point (i.e., the same time with different HR values) will cause an
 error.
 
 **Interaction with apply_af:**
@@ -62,10 +65,10 @@ time-dependent effects.
 
 ``` r
 
-# Apply time-dependent HR: 0.5 for t in [0,5), 0.8 for t >= 5
+# Apply time-dependent HR: 0.5 in cycles 1-5 (t in (0, 5]), 0.8 after
 td_dist <- apply_td_hr(
  define_surv_param("exp", rate = 0.1),
- time = 0:9,
+ time = 1:10,
  hr = c(rep(0.5, 5), rep(0.8, 5))
 )
 ```

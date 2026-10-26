@@ -42,7 +42,7 @@ a `surv_parametric` object.
 | exponential | `cons` | `rate = exp(-cons)` |
 | weibull | `cons`, `ln_p` | `shape = exp(ln_p)`, `scale = exp(cons)` |
 | lognormal | `cons`, `sigma` | `meanlog = cons`, `sdlog = sigma` |
-| loglogistic | `cons`, `gamma` | `shape = gamma`, `scale = exp(cons)` |
+| loglogistic | `cons`, `gamma` | `shape = 1 / gamma`, `scale = exp(cons)` |
 | ggamma | `cons`, `sigma`, `kappa` | `mu = cons`, `sigma = sigma`, `Q = kappa` |
 
 ### PH metric parameters
@@ -65,7 +65,7 @@ a `surv_parametric` object.
 - **Lognormal**: `S(t) = 1 - Phi((log(t) - cons) / sigma)` where `Phi()`
   is the standard normal CDF
 
-- **Log-logistic**: `S(t) = 1 / (1 + (t / exp(cons))^gamma)`
+- **Log-logistic**: `S(t) = 1 / (1 + (t / exp(cons))^(1 / gamma))`
 
 - **Generalized gamma**: No simple closed form; `mu = cons`,
   `sigma = sigma`, `Q = kappa`
