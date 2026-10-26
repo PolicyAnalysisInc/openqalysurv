@@ -92,8 +92,17 @@ show_call_error <- function() {
     getOption(nm, default = default_options[[nm]])
 }
 
+#' @tests
+#' # show_call_warn() reads the warnings option, not the errors option
+#' old_opts <- options(
+#'  openqalysurv.show_call_signature_in_errors = TRUE,
+#'  openqalysurv.show_call_signature_in_warnings = FALSE
+#' )
+#' expect_false(show_call_warn())
+#' options(old_opts)
+#'
 show_call_warn <- function() {
-    nm <- 'openqalysurv.show_call_signature_in_errors'
+    nm <- 'openqalysurv.show_call_signature_in_warnings'
     getOption(nm, default = default_options[[nm]])
 }
 

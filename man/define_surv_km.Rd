@@ -13,7 +13,7 @@ these can be configured by via the optional parameters.}
 
 \item{time_col}{the name of the time column (defaults to \code{time})}
 
-\item{surv_col}{the name of the time column (defaults to \code{survival})}
+\item{surv_col}{the name of the survival column (defaults to \code{survival})}
 }
 \value{
 a \code{surv_km} object.

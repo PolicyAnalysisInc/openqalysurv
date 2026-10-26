@@ -179,7 +179,7 @@ test_that("Function get_dist_param_from_args() @ L296", {
 })
 
 
-test_that("Function get_dist_display_name() @ L314", {
+test_that("Function get_dist_display_name() @ L324", {
   expect_equal(
    get_dist_display_name('foo'),
    'foo'
@@ -189,10 +189,20 @@ test_that("Function get_dist_display_name() @ L314", {
    get_dist_display_name('exp'),
    'exponential'
   )
+  
+  # the original-parameterisation generalized distributions
+  expect_equal(
+   get_dist_display_name('gengamma.orig'),
+   'generalized gamma (original)'
+  )
+  expect_equal(
+   get_dist_display_name('genf.orig'),
+   'generalized F (original)'
+  )
 })
 
 
-test_that("Function check_param_names() @ L329", {
+test_that("Function check_param_names() @ L339", {
   expect_error(
    check_param_names(list(shape=1,foo=2), 'weibullPH'), 
    'Error defining Weibull (PH) distribution, parameters missing from function call: "scale".',

@@ -1,7 +1,9 @@
 #' Maximum Hazards
 #'
 #' Combine two or more survival distributions by taking the pointwise
-#' maximum of their discrete hazards at each time step.
+#' maximum of their discrete hazards at each time step. The steps form a fixed
+#' grid from time 0 with step `cycle_length / 10`, so the survival at a time
+#' does not depend on which other times are requested.
 #'
 #' @name max_hazards
 #' @rdname max_hazards
@@ -10,8 +12,10 @@
 #' @param dist1 first survival distribution
 #' @param dist2 second survival distribution
 #' @param ... additional survival distributions
-#' @param cycle_length step size used by `surv_quantile` for grid search
-#'   (default 1). Has no effect on `surv_prob`.
+#' @param cycle_length the time step the distribution is used with (default
+#'   1). `surv_prob` takes the maximum hazard over steps of
+#'   `cycle_length / 10`, and `surv_quantile` searches in steps of
+#'   `cycle_length`.
 #'
 #' @return A `surv_max_haz` object.
 #'
@@ -116,61 +120,58 @@ max_hazards <- function(dist1, dist2, ..., cycle_length = 1) {
 #' s_vals <- surv_prob(mh, 0:100)
 #' expect_true(all(diff(s_vals) <= 0))
 #'
+#' # The value at t does not depend on which other times are queried, and
+#' # query times need not be sorted or unique
+#' mh_cross <- max_hazards(define_surv_param("exp", rate = 0.1),
+#'                         define_surv_param("weibull", shape = 2, scale = 10))
+#' expect_equal(surv_prob(mh_cross, c(5, 10))[2], surv_prob(mh_cross, 10), tolerance = 1e-6)
+#' expect_equal(
+#'  surv_prob(mh_cross, c(10, 3, 10, 0)),
+#'  c(surv_prob(mh_cross, 10), surv_prob(mh_cross, 3), surv_prob(mh_cross, 10), 1)
+#' )
+#'
+#' # The hazards cross at t = 5, so S(10) = exp(-(0.5 + 0.75)) up to the grid step
+#' expect_equal(surv_prob(mh_cross, 10), exp(-1.25), tolerance = 1e-3)
+#'
 surv_prob.surv_max_haz <- function(x, time, ...) {
     check_times(time, 'calculating survival probabilities', 'time')
 
     n_times <- length(time)
     if (n_times == 0) return(numeric(0))
 
-    # Sort time and track original order
-    ord <- order(time)
-    sorted_time <- time[ord]
+    # Fixed grid from 0 with step cycle_length / 10, long enough to cover the
+    # latest requested time. Results at a time depend only on the grid, not on
+    # the other requested times, which may be in any order.
+    step <- x$cycle_length / 10
+    max_time <- max(time)
+    n_steps <- ceiling(max_time / step)
+    if (n_steps * step < max_time) n_steps <- n_steps + 1
+    if (n_steps == 0) return(rep(1, n_times))
+    grid <- (0:n_steps) * step
 
-    # Compute S_k(t) for each component at all query times
-    all_surv <- map(x$dists, function(d) surv_prob(d, sorted_time, ...))
+    # Cumulative hazard of each component on the grid
+    cum_haz <- vapply(
+        x$dists,
+        function(d) -log(surv_prob(d, grid, ...)),
+        numeric(length(grid))
+    )
+    cum_haz <- matrix(cum_haz, nrow = length(grid))
 
-    # Initialize result
-    result <- numeric(n_times)
-    result[1] <- 1  # S(t_0) if t_0 = 0, handle below
+    # Hazard in each step: the largest component increment. A component whose
+    # survival has reached 0 has infinite hazard from then on.
+    incr <- apply(cum_haz, 2, diff)
+    incr <- matrix(incr, nrow = length(grid) - 1)
+    incr[is.nan(incr)] <- Inf
+    max_incr <- do.call(pmax, as.data.frame(incr))
+    grid_haz <- c(0, cumsum(max_incr))
 
-    if (sorted_time[1] == 0) {
-        result[1] <- 1
-        start_idx <- 2
-    } else {
-        # Need to compute from 0 to first time point
-        # Get S_k at a "previous" time of 0
-        prev_surv <- map_dbl(x$dists, function(d) surv_prob(d, 0, ...))
-        max_haz <- 0
-        for (k in seq_along(x$dists)) {
-            h_k <- -log(all_surv[[k]][1] / prev_surv[k])
-            max_haz <- max(max_haz, h_k)
-        }
-        result[1] <- exp(-max_haz)
-        start_idx <- 2
-    }
-
-    if (n_times >= start_idx) {
-        for (i in start_idx:n_times) {
-            # Discrete hazard for each component in step [t_{i-1}, t_i]
-            max_haz <- 0
-            for (k in seq_along(x$dists)) {
-                s_prev <- all_surv[[k]][i - 1]
-                s_curr <- all_surv[[k]][i]
-                if (s_prev > 0) {
-                    h_k <- -log(s_curr / s_prev)
-                } else {
-                    h_k <- Inf
-                }
-                max_haz <- max(max_haz, h_k)
-            }
-            result[i] <- result[i - 1] * exp(-max_haz)
-        }
-    }
-
-    # Restore original order
-    final <- numeric(n_times)
-    final[ord] <- result
-    final
+    # Interpolate the cumulative hazard linearly within each step
+    idx <- findInterval(time, grid, rightmost.closed = TRUE)
+    w <- (time - grid[idx]) / step
+    lower <- grid_haz[idx]
+    upper <- grid_haz[idx + 1]
+    haz <- ifelse(w == 0 | is.infinite(lower), lower, lower + w * (upper - lower))
+    exp(-haz)
 }
 
 #' @export

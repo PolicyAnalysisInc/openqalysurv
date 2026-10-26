@@ -28,6 +28,13 @@
 #'  'Predictions will reflect weighted average of predictions for subjects used to fit model.',
 #'  fixed = TRUE
 #' )
+#' # strata predictions keep the requested length and order
+#' expect_length(suppressWarnings(surv_prob(sf2, c(2000, 1000, 2000))), 3)
+#' expect_equal(
+#'  suppressWarnings(surv_prob(sf2, c(2000, 1000, 2000))),
+#'  suppressWarnings(surv_prob(sf2, c(1000, 2000)))[c(2, 1, 2)],
+#'  tolerance = 1e-10
+#' )
 surv_prob.survfit <- function(x, time,  ...) {
   
   check_times(time, 'calculating survival probabilities', 'time')
@@ -61,8 +68,11 @@ surv_prob.survfit <- function(x, time,  ...) {
         # is NA
         value[selector] <- as.numeric(NA)
       }
+      # pos keeps the requested order and length when times are unsorted or
+      # repeated
       tibble(
-        t = time, 
+        pos = seq_along(time),
+        t = time,
         value = value,
         n = d$n[1])
     }
@@ -71,12 +81,12 @@ surv_prob.survfit <- function(x, time,  ...) {
   if (is.null(dots$covar)) {
     if (length(terms) > 0) {
       msg <- get_and_populate_message('model_no_covariates')
-      warning(msg, show_call_warn())
+      warning(msg, call. = show_call_warn())
     }
     # If covariates are not provided, do weighted average for each time.
     agg_df <- surv_df %>%
       as_tibble() %>% 
-      group_by(t) %>%
+      group_by(.data$pos) %>%
       summarize(value = sum(.data$value * n) / sum(n))
   } else {
     
@@ -85,7 +95,7 @@ surv_prob.survfit <- function(x, time,  ...) {
     
     agg_df <- clean_factors(dots$covar) %>% 
       left_join(surv_df, by = terms) %>%
-      group_by(t) %>%
+      group_by(.data$pos) %>%
       summarize(value = mean(.data$value))
   }
   

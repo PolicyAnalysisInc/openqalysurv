@@ -28,7 +28,7 @@
 #' | exponential | `cons` | `rate = exp(-cons)` |
 #' | weibull | `cons`, `ln_p` | `shape = exp(ln_p)`, `scale = exp(cons)` |
 #' | lognormal | `cons`, `sigma` | `meanlog = cons`, `sdlog = sigma` |
-#' | loglogistic | `cons`, `gamma` | `shape = gamma`, `scale = exp(cons)` |
+#' | loglogistic | `cons`, `gamma` | `shape = 1 / gamma`, `scale = exp(cons)` |
 #' | ggamma | `cons`, `sigma`, `kappa` | `mu = cons`, `sigma = sigma`, `Q = kappa` |
 #'
 #' ## PH metric parameters
@@ -47,7 +47,7 @@
 #' - **Weibull**: `S(t) = exp(-(t / exp(cons))^exp(ln_p))`
 #' - **Lognormal**: `S(t) = 1 - Phi((log(t) - cons) / sigma)` where
 #'   `Phi()` is the standard normal CDF
-#' - **Log-logistic**: `S(t) = 1 / (1 + (t / exp(cons))^gamma)`
+#' - **Log-logistic**: `S(t) = 1 / (1 + (t / exp(cons))^(1 / gamma))`
 #' - **Generalized gamma**: No simple closed form;
 #'   `mu = cons`, `sigma = sigma`, `Q = kappa`
 #'
@@ -89,10 +89,17 @@
 #'
 #' # Log-logistic AFT
 #' dist4 <- define_surv_streg("loglogistic", cons = 3, gamma = 1.667, metric = "aft")
-#' ref4 <- define_surv_param("llogis", shape = 1.667, scale = exp(3))
+#' ref4 <- define_surv_param("llogis", shape = 1 / 1.667, scale = exp(3))
 #' expect_equal(
 #'  surv_prob(dist4, c(0, 5, 10, 20)),
 #'  surv_prob(ref4, c(0, 5, 10, 20))
+#' )
+#'
+#' # Stata manual S(t) = 1 / (1 + (exp(-cons) * t)^(1 / gamma))
+#' expect_equal(
+#'  surv_prob(dist4, c(1, 5, 10, 20)),
+#'  1 / (1 + (exp(-3) * c(1, 5, 10, 20))^(1 / 1.667)),
+#'  tolerance = 1e-10
 #' )
 #'
 #' # Generalized gamma AFT
@@ -202,7 +209,7 @@ define_surv_streg <- function(distribution, ..., metric = c("aft", "ph")) {
             exponential = list(rate = exp(-args$cons)),
             weibull = list(shape = exp(args$ln_p), scale = exp(args$cons)),
             lognormal = list(meanlog = args$cons, sdlog = args$sigma),
-            loglogistic = list(shape = args$gamma, scale = exp(args$cons)),
+            loglogistic = list(shape = 1 / args$gamma, scale = exp(args$cons)),
             ggamma = list(mu = args$cons, sigma = args$sigma, Q = args$kappa)
         )
     } else {

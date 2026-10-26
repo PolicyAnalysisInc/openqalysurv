@@ -50,7 +50,18 @@ test_that("Function truncate_param() @ L76", {
 })
 
 
-test_that("Function check_times() @ L117", {
+test_that("Function show_call_warn() @ L104", {
+  # show_call_warn() reads the warnings option, not the errors option
+  old_opts <- options(
+   openqalysurv.show_call_signature_in_errors = TRUE,
+   openqalysurv.show_call_signature_in_warnings = FALSE
+  )
+  expect_false(show_call_warn())
+  options(old_opts)
+})
+
+
+test_that("Function check_times() @ L126", {
   expect_error(
    check_times(c(0,1,2,3), '', ''),
    NA
@@ -70,7 +81,7 @@ test_that("Function check_times() @ L117", {
 })
 
 
-test_that("Function parse_percent_string_to_number() @ L165", {
+test_that("Function parse_percent_string_to_number() @ L174", {
   expect_equal(
    parse_percent_string_to_number(c('45%', '1%', '0.3434%')),
    c(0.45, 0.01, 0.003434)

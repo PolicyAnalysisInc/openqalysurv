@@ -17,6 +17,10 @@
 NULL
 
 #' @tests
+#' # utils is used (utils::head, tail, capture.output) so it must be listed in Imports
+#' imports <- trimws(strsplit(packageDescription('openqalysurv')$Imports, ',')[[1]])
+#' expect_true('utils' %in% imports)
+#'
 #' options(
 #'  list(
 #'      openqalysurv.show_call_signature_in_errors = NULL,

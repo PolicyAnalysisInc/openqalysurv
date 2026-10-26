@@ -2,7 +2,7 @@
 
 # File R/surv_param_streg.r: @tests
 
-test_that("Function define_surv_streg() @ L173", {
+test_that("Function define_surv_streg() @ L180", {
   # --- AFT metric ---
   
   # Exponential AFT
@@ -32,10 +32,17 @@ test_that("Function define_surv_streg() @ L173", {
   
   # Log-logistic AFT
   dist4 <- define_surv_streg("loglogistic", cons = 3, gamma = 1.667, metric = "aft")
-  ref4 <- define_surv_param("llogis", shape = 1.667, scale = exp(3))
+  ref4 <- define_surv_param("llogis", shape = 1 / 1.667, scale = exp(3))
   expect_equal(
    surv_prob(dist4, c(0, 5, 10, 20)),
    surv_prob(ref4, c(0, 5, 10, 20))
+  )
+  
+  # Stata manual S(t) = 1 / (1 + (exp(-cons) * t)^(1 / gamma))
+  expect_equal(
+   surv_prob(dist4, c(1, 5, 10, 20)),
+   1 / (1 + (exp(-3) * c(1, 5, 10, 20))^(1 / 1.667)),
+   tolerance = 1e-10
   )
   
   # Generalized gamma AFT

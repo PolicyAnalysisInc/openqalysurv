@@ -311,6 +311,16 @@ get_dist_param_from_args <- function(name, args) {
 #'  get_dist_display_name('exp'),
 #'  'exponential'
 #' )
+#'
+#' # the original-parameterisation generalized distributions
+#' expect_equal(
+#'  get_dist_display_name('gengamma.orig'),
+#'  'generalized gamma (original)'
+#' )
+#' expect_equal(
+#'  get_dist_display_name('genf.orig'),
+#'  'generalized F (original)'
+#' )
 get_dist_display_name <- function(name) {
     if (!name %in% names(flexsurv_dist_aliases)) {
         return(name)

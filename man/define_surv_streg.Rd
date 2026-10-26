@@ -32,7 +32,7 @@ AFT or PH parameterization to flexsurv's native parameterization.
    exponential \tab \code{cons} \tab \code{rate = exp(-cons)} \cr
    weibull \tab \code{cons}, \code{ln_p} \tab \code{shape = exp(ln_p)}, \code{scale = exp(cons)} \cr
    lognormal \tab \code{cons}, \code{sigma} \tab \code{meanlog = cons}, \code{sdlog = sigma} \cr
-   loglogistic \tab \code{cons}, \code{gamma} \tab \code{shape = gamma}, \code{scale = exp(cons)} \cr
+   loglogistic \tab \code{cons}, \code{gamma} \tab \code{shape = 1 / gamma}, \code{scale = exp(cons)} \cr
    ggamma \tab \code{cons}, \code{sigma}, \code{kappa} \tab \code{mu = cons}, \code{sigma = sigma}, \code{Q = kappa} \cr
 }
 
@@ -54,7 +54,7 @@ AFT or PH parameterization to flexsurv's native parameterization.
 \item \strong{Weibull}: \code{S(t) = exp(-(t / exp(cons))^exp(ln_p))}
 \item \strong{Lognormal}: \code{S(t) = 1 - Phi((log(t) - cons) / sigma)} where
 \code{Phi()} is the standard normal CDF
-\item \strong{Log-logistic}: \code{S(t) = 1 / (1 + (t / exp(cons))^gamma)}
+\item \strong{Log-logistic}: \code{S(t) = 1 / (1 + (t / exp(cons))^(1 / gamma))}
 \item \strong{Generalized gamma}: No simple closed form;
 \code{mu = cons}, \code{sigma = sigma}, \code{Q = kappa}
 }

@@ -13,15 +13,19 @@ max_hazards(dist1, dist2, ..., cycle_length = 1)
 
 \item{...}{additional survival distributions}
 
-\item{cycle_length}{step size used by \code{surv_quantile} for grid search
-(default 1). Has no effect on \code{surv_prob}.}
+\item{cycle_length}{the time step the distribution is used with (default
+1). \code{surv_prob} takes the maximum hazard over steps of
+\code{cycle_length / 10}, and \code{surv_quantile} searches in steps of
+\code{cycle_length}.}
 }
 \value{
 A \code{surv_max_haz} object.
 }
 \description{
 Combine two or more survival distributions by taking the pointwise
-maximum of their discrete hazards at each time step.
+maximum of their discrete hazards at each time step. The steps form a fixed
+grid from time 0 with step \code{cycle_length / 10}, so the survival at a time
+does not depend on which other times are requested.
 }
 \examples{
 

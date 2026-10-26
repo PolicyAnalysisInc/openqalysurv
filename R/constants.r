@@ -90,9 +90,9 @@ flexsurv_dist_aliases <- list(
     lnorm = 'lognormal',
     gamma = 'gamma',
     gengamma = 'generalized gamma (stable)',
-    gengamma.org = 'generalized gamma (original)',
+    gengamma.orig = 'generalized gamma (original)',
     genf = 'generalized F (stable)',
-    genf.orif = 'generalized F (original)',
+    genf.orig = 'generalized F (original)',
     gompertz = 'Gompertz'
 )
 

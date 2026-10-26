@@ -90,13 +90,38 @@ check_probs <- function(probs) {
 #' dist1 <- define_surv_param('exp', rate = 0.05)
 #' expect_true(is.finite(find_search_upper(dist1, 0.5)))
 #' expect_true(surv_prob(dist1, find_search_upper(dist1, 0.01)) < 0.01)
+#'
+#' # A Kaplan-Meier quantile is the first time S <= p, and Inf when S never
+#' # reaches p within follow-up
+#' sf_bc <- survival::survfit(survival::Surv(recyrs, censrec) ~ 1, data = flexsurv::bc)
+#' q_median <- surv_quantile(sf_bc, 0.5)
+#' expect_true(is.finite(q_median))
+#' expect_equal(q_median, min(sf_bc$time[sf_bc$surv <= 0.5]), tolerance = 1e-4)
+#' expect_equal(surv_quantile(sf_bc, 0.01), Inf)
+#'
+#' # Stratified fits search only up to the last time every stratum covers
+#' sf_strata <- survival::survfit(survival::Surv(recyrs, censrec) ~ group, data = flexsurv::bc)
+#' expect_true(is.finite(surv_quantile(sf_strata, 0.5)))
 find_search_upper <- function(x, p) {
-    upper <- 1
+    cap <- search_time_cap(x)
+    upper <- min(1, cap)
     max_iter <- 50
     for (i in seq_len(max_iter)) {
         s <- surv_prob(x, upper)
-        if (s <= p) return(upper)
-        upper <- upper * 2
+        if (!is.na(s) && s <= p) return(upper)
+        if (upper >= cap) return(Inf)
+        upper <- min(upper * 2, cap)
     }
     Inf
+}
+
+# Largest time at which survival can be evaluated: for a survfit object, the
+# last time with a non-missing prediction (survival is NA beyond follow-up
+# unless the curve reaches 0); Inf for other distributions.
+search_time_cap <- function(x) {
+    if (!inherits(x, "survfit")) return(Inf)
+    cand <- sort(unique(c(0, x$time)))
+    ok <- !is.na(surv_prob(x, cand))
+    if (!any(ok)) return(0)
+    max(cand[ok])
 }

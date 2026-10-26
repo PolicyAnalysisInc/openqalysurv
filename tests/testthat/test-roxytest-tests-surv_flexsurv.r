@@ -2,7 +2,7 @@
 
 # File R/surv_flexsurv.r: @tests
 
-test_that("Function surv_prob.flexsurvreg() @ L38", {
+test_that("Function surv_prob.flexsurvreg() @ L51", {
   surv_dist1 <- flexsurvreg(Surv(rectime, censrec)~1, data = flexsurv::bc, dist = 'weibull')
   surv_dist2 <- define_surv_param('weibull', shape = 1.271519, scale = 2259.852523)
   expect_equal(
@@ -37,10 +37,22 @@ test_that("Function surv_prob.flexsurvreg() @ L38", {
    'Predictions will reflect weighted average of predictions for subjects used to fit model.',
    fixed = T
   )
+  
+  # covariate predictions keep the requested length and order
+  expect_length(suppressWarnings(surv_prob(surv_dist3, c(1, 1, 2))), 3)
+  expect_equal(
+   suppressWarnings(surv_prob(surv_dist3, c(3, 1, 2))),
+   suppressWarnings(surv_prob(surv_dist3, c(1, 2, 3)))[c(3, 1, 2)],
+   tolerance = 1e-10
+  )
+  
+  # the covariate warning message does not end in "FALSE"
+  warn_msg <- tryCatch(surv_prob(surv_dist3, 1), warning = function(w) conditionMessage(w))
+  expect_false(grepl('FALSE$', warn_msg))
 })
 
 
-test_that("Function extract_flexsurv_params() @ L133", {
+test_that("Function extract_flexsurv_params() @ L149", {
   fs1 <- flexsurvreg(Surv(rectime, censrec)~group, data = flexsurv::bc, dist = 'weibull')
   params_no_data <- extract_flexsurv_params(fs1)
   expect_equal(

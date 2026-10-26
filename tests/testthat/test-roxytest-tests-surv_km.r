@@ -138,7 +138,7 @@ test_that("Function print.surv_km() @ L257", {
 })
 
 
-test_that("Function define_surv_table() @ L272", {
+test_that("Function define_surv_table() @ L281", {
   df <- data.frame(
        time = c(0, 1, 5, 10),
        survival = c(1, 0.9, 0.7, 0.5)
@@ -149,7 +149,7 @@ test_that("Function define_surv_table() @ L272", {
 })
 
 
-test_that("Function surv_prob.surv_km() @ L298", {
+test_that("Function surv_prob.surv_km() @ L307", {
   df <- data.frame(
        time = c(0, 1, 5, 10),
        survival = c(1, 0.9, 0.7, 0.5)
@@ -171,7 +171,7 @@ test_that("Function surv_prob.surv_km() @ L298", {
 })
 
 
-test_that("Function plot.surv_km() @ L337", {
+test_that("Function plot.surv_km() @ L346", {
   df <- data.frame(
        time = c(0, 1, 5, 10),
        survival = c(1, 0.9, 0.7, 0.5)

@@ -2,7 +2,7 @@
 
 # File R/apply_td_hr.r: @tests
 
-test_that("Function apply_td_hr() @ L105", {
+test_that("Function apply_td_hr() @ L108", {
   dist1 <- define_surv_param("exp", rate = 0.1)
   
   # Delegation to apply_hr when length(hr) == 1
@@ -63,7 +63,7 @@ test_that("Function apply_td_hr() @ L105", {
 })
 
 
-test_that("Function surv_prob.surv_td_ph() @ L293", {
+test_that("Function surv_prob.surv_td_ph() @ L334", {
   dist1 <- define_surv_param("exp", rate = 0.1)
   
   # Constant HR should match apply_hr
@@ -87,8 +87,46 @@ test_that("Function surv_prob.surv_td_ph() @ L293", {
   td_dist2 <- apply_td_hr(dist1, 0:2, c(0.5, 0.8, 1.2))
   expect_equal(surv_prob(td_dist2, 0), 1)
   
+  # Cycle example: hr[k] applies on (k - 1, k], so cycle k gets hr[k]
+  cyc_hr <- 0.3 + 0.01 * (0:9)
+  cyc <- apply_td_hr(dist1, 1:10, cyc_hr)
+  expect_equal(
+   surv_prob(cyc, 1:10),
+   exp(-0.1 * cumsum(cyc_hr)),
+   tolerance = 1e-10
+  )
+  
+  # Query times need not be sorted or unique
+  expect_equal(
+   surv_prob(cyc, c(7, 2, 7, 0.5)),
+   surv_prob(cyc, sort(unique(c(7, 2, 0.5))))[c(3, 2, 3, 1)],
+   tolerance = 1e-12
+  )
+  
+  # Quantile round-trip on the cycle example
+  expect_equal(
+   surv_quantile(cyc, surv_prob(cyc, c(2.5, 6.5))),
+   c(2.5, 6.5),
+   tolerance = 1e-6
+  )
+  
+  # A single HR matches apply_hr at any time
+  expect_equal(
+   surv_prob(apply_td_hr(dist1, 100, 2), c(1, 3, 50, 120)),
+   surv_prob(apply_hr(dist1, 2), c(1, 3, 50, 120)),
+   tolerance = 1e-10
+  )
+  
+  # time = c(5, 10), hr = c(2, 0.5): hr 2 on (0, 5], then 0.5 after 5 (continues past 10)
+  expect_equal(
+   surv_prob(apply_td_hr(dist1, c(5, 10), c(2, 0.5)), c(1, 5, 7, 10, 12)),
+   surv_prob(join(apply_hr(dist1, 2), 5, apply_hr(dist1, 0.5)), c(1, 5, 7, 10, 12)),
+   tolerance = 1e-10
+  )
+  
   # Past the last stored time the last HR continues indefinitely
-  join_past <- join(apply_hr(dist1, 0.5), 1, apply_hr(dist1, 0.8), 2, apply_hr(dist1, 1.2))
+  # hr[i] applies on (time[i-1], time[i]] with time[0] = 0, so hr[1] covers no time here
+  join_past <- join(apply_hr(dist1, 0.8), 1, apply_hr(dist1, 1.2))
   test_past <- c(2, 3, 5, 10)
   expect_equal(
    surv_prob(td_dist2, test_past),
@@ -102,9 +140,9 @@ test_that("Function surv_prob.surv_td_ph() @ L293", {
   )
   
   # CORE VALIDATION: td_hr should match join + apply_hr for piecewise constant HR
-  # HR=0.5 for [0,2), HR=0.8 for [2,4)
+  # HR=0.5 for (0,1], HR=0.8 after 1 (hr[2] covers (0,1], hr[3] covers (1,2])
   td_dist3 <- apply_td_hr(dist1, 0:3, c(0.5, 0.5, 0.8, 0.8))
-  join_dist <- join(apply_hr(dist1, 0.5), 2, apply_hr(dist1, 0.8))
+  join_dist <- join(apply_hr(dist1, 0.5), 1, apply_hr(dist1, 0.8))
   test_times <- c(0, 0.5, 1, 1.5, 2, 2.5, 3)
   expect_equal(
    surv_prob(td_dist3, test_times),
@@ -112,9 +150,9 @@ test_that("Function surv_prob.surv_td_ph() @ L293", {
    tolerance = 1e-10
   )
   
-  # Multiple HR transitions: HR=0.5 for [0,2), HR=1.0 for [2,4), HR=1.5 for [4,6)
+  # Multiple HR transitions: HR=0.5 for (0,1], HR=1.0 for (1,3], HR=1.5 after 3
   td_dist4 <- apply_td_hr(dist1, 0:5, c(0.5, 0.5, 1.0, 1.0, 1.5, 1.5))
-  join_dist2 <- join(apply_hr(dist1, 0.5), 2, apply_hr(dist1, 1.0), 4, apply_hr(dist1, 1.5))
+  join_dist2 <- join(apply_hr(dist1, 0.5), 1, apply_hr(dist1, 1.0), 3, apply_hr(dist1, 1.5))
   test_times2 <- c(0, 1, 2, 3, 4, 5)
   expect_equal(
    surv_prob(td_dist4, test_times2),
@@ -125,7 +163,7 @@ test_that("Function surv_prob.surv_td_ph() @ L293", {
   # Non-exponential: Weibull distribution
   dist_weib <- define_surv_param("weibull", shape = 1.5, scale = 10)
   td_weib <- apply_td_hr(dist_weib, 0:3, c(0.5, 0.5, 0.8, 0.8))
-  join_weib <- join(apply_hr(dist_weib, 0.5), 2, apply_hr(dist_weib, 0.8))
+  join_weib <- join(apply_hr(dist_weib, 0.5), 1, apply_hr(dist_weib, 0.8))
   expect_equal(
    surv_prob(td_weib, test_times),
    surv_prob(join_weib, test_times),
@@ -135,7 +173,7 @@ test_that("Function surv_prob.surv_td_ph() @ L293", {
   # Composite baseline: apply_hr on top of existing surv_ph
   dist_ph <- apply_hr(dist1, 0.7)
   td_composite <- apply_td_hr(dist_ph, 0:3, c(0.5, 0.5, 0.8, 0.8))
-  join_composite <- join(apply_hr(dist_ph, 0.5), 2, apply_hr(dist_ph, 0.8))
+  join_composite <- join(apply_hr(dist_ph, 0.5), 1, apply_hr(dist_ph, 0.8))
   expect_equal(
    surv_prob(td_composite, test_times),
    surv_prob(join_composite, test_times),
@@ -146,7 +184,7 @@ test_that("Function surv_prob.surv_td_ph() @ L293", {
   
   # Test: sparse stored times, queries fall between them
   td_sparse <- apply_td_hr(dist1, c(0, 2, 4), c(0.5, 0.8, 1.0))
-  join_sparse <- join(apply_hr(dist1, 0.5), 2, apply_hr(dist1, 0.8), 4, apply_hr(dist1, 1.0))
+  join_sparse <- join(apply_hr(dist1, 0.8), 2, apply_hr(dist1, 1.0))
   expect_equal(
    surv_prob(td_sparse, c(0, 1, 2, 3, 4)),
    surv_prob(join_sparse, c(0, 1, 2, 3, 4)),
@@ -162,7 +200,7 @@ test_that("Function surv_prob.surv_td_ph() @ L293", {
   
   # Test: sparse stored, dense queries
   td_dense <- apply_td_hr(dist1, c(0, 5, 10), c(0.5, 0.8, 1.0))
-  join_dense <- join(apply_hr(dist1, 0.5), 5, apply_hr(dist1, 0.8), 10, apply_hr(dist1, 1.0))
+  join_dense <- join(apply_hr(dist1, 0.8), 5, apply_hr(dist1, 1.0))
   expect_equal(
    surv_prob(td_dense, seq(0, 10, by = 0.5)),
    surv_prob(join_dense, seq(0, 10, by = 0.5)),
@@ -172,7 +210,7 @@ test_that("Function surv_prob.surv_td_ph() @ L293", {
   # Test: Weibull with non-aligned times
   dist_weib2 <- define_surv_param("weibull", shape = 1.5, scale = 10)
   td_weib2 <- apply_td_hr(dist_weib2, c(0, 2, 5), c(0.5, 0.8, 1.2))
-  join_weib2 <- join(apply_hr(dist_weib2, 0.5), 2, apply_hr(dist_weib2, 0.8), 5, apply_hr(dist_weib2, 1.2))
+  join_weib2 <- join(apply_hr(dist_weib2, 0.8), 2, apply_hr(dist_weib2, 1.2))
   expect_equal(
    surv_prob(td_weib2, c(0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5)),
    surv_prob(join_weib2, c(0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5)),
@@ -185,7 +223,7 @@ test_that("Function surv_prob.surv_td_ph() @ L293", {
 })
 
 
-test_that("Function surv_quantile.surv_td_ph() @ L329", {
+test_that("Function surv_quantile.surv_td_ph() @ L374", {
   dist1 <- define_surv_param('exp', rate = 0.1)
   
   # Roundtrip for td_ph (use high probs that resolve within stored range)
@@ -208,7 +246,7 @@ test_that("Function surv_quantile.surv_td_ph() @ L329", {
 })
 
 
-test_that("Function print.surv_td_ph() @ L377", {
+test_that("Function print.surv_td_ph() @ L424", {
   dist1 <- apply_td_hr(define_surv_param('exp', rate = 0.1), 0:2, c(0.5, 0.8, 1.2))
   expect_output(print(dist1), 'time-dependent proportional hazards')
 })

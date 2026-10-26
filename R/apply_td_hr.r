@@ -17,10 +17,13 @@
 #'
 #' @details
 #' The `time` and `hr` vectors are parallel: `hr[i]` applies on the interval
-#' `[time[i], time[i + 1])`, and the last hazard ratio applies indefinitely
-#' after the last time point. Duplicate (time, hr) pairs are allowed and will be
-#' deduplicated. However, conflicting HRs for the same time point (i.e., the same
-#' time with different HR values) will cause an error.
+#' `(time[i - 1], time[i]]`, with `time[0] = 0`, and the last hazard ratio
+#' continues after the last time point. With `time` set to the end of each
+#' cycle (for example `cycle`), cycle k is given `hr[k]`. A hazard ratio whose
+#' interval has zero length (for example `hr[1]` when `time[1] = 0`) covers no
+#' time. Duplicate (time, hr) pairs are allowed and will be deduplicated.
+#' However, conflicting HRs for the same time point (i.e., the same time with
+#' different HR values) will cause an error.
 #'
 #' **Interaction with apply_af:**
 #'
@@ -37,10 +40,10 @@
 #'
 #' @examples
 #'
-#' # Apply time-dependent HR: 0.5 for t in [0,5), 0.8 for t >= 5
+#' # Apply time-dependent HR: 0.5 in cycles 1-5 (t in (0, 5]), 0.8 after
 #' td_dist <- apply_td_hr(
 #'  define_surv_param("exp", rate = 0.1),
-#'  time = 0:9,
+#'  time = 1:10,
 #'  hr = c(rep(0.5, 5), rep(0.8, 5))
 #' )
 #'
@@ -194,8 +197,46 @@ apply_td_hr <- function(dist, time, hr, log_hr = FALSE) {
 #' td_dist2 <- apply_td_hr(dist1, 0:2, c(0.5, 0.8, 1.2))
 #' expect_equal(surv_prob(td_dist2, 0), 1)
 #'
+#' # Cycle example: hr[k] applies on (k - 1, k], so cycle k gets hr[k]
+#' cyc_hr <- 0.3 + 0.01 * (0:9)
+#' cyc <- apply_td_hr(dist1, 1:10, cyc_hr)
+#' expect_equal(
+#'  surv_prob(cyc, 1:10),
+#'  exp(-0.1 * cumsum(cyc_hr)),
+#'  tolerance = 1e-10
+#' )
+#'
+#' # Query times need not be sorted or unique
+#' expect_equal(
+#'  surv_prob(cyc, c(7, 2, 7, 0.5)),
+#'  surv_prob(cyc, sort(unique(c(7, 2, 0.5))))[c(3, 2, 3, 1)],
+#'  tolerance = 1e-12
+#' )
+#'
+#' # Quantile round-trip on the cycle example
+#' expect_equal(
+#'  surv_quantile(cyc, surv_prob(cyc, c(2.5, 6.5))),
+#'  c(2.5, 6.5),
+#'  tolerance = 1e-6
+#' )
+#'
+#' # A single HR matches apply_hr at any time
+#' expect_equal(
+#'  surv_prob(apply_td_hr(dist1, 100, 2), c(1, 3, 50, 120)),
+#'  surv_prob(apply_hr(dist1, 2), c(1, 3, 50, 120)),
+#'  tolerance = 1e-10
+#' )
+#'
+#' # time = c(5, 10), hr = c(2, 0.5): hr 2 on (0, 5], then 0.5 after 5 (continues past 10)
+#' expect_equal(
+#'  surv_prob(apply_td_hr(dist1, c(5, 10), c(2, 0.5)), c(1, 5, 7, 10, 12)),
+#'  surv_prob(join(apply_hr(dist1, 2), 5, apply_hr(dist1, 0.5)), c(1, 5, 7, 10, 12)),
+#'  tolerance = 1e-10
+#' )
+#'
 #' # Past the last stored time the last HR continues indefinitely
-#' join_past <- join(apply_hr(dist1, 0.5), 1, apply_hr(dist1, 0.8), 2, apply_hr(dist1, 1.2))
+#' # hr[i] applies on (time[i-1], time[i]] with time[0] = 0, so hr[1] covers no time here
+#' join_past <- join(apply_hr(dist1, 0.8), 1, apply_hr(dist1, 1.2))
 #' test_past <- c(2, 3, 5, 10)
 #' expect_equal(
 #'  surv_prob(td_dist2, test_past),
@@ -209,9 +250,9 @@ apply_td_hr <- function(dist, time, hr, log_hr = FALSE) {
 #' )
 #'
 #' # CORE VALIDATION: td_hr should match join + apply_hr for piecewise constant HR
-#' # HR=0.5 for [0,2), HR=0.8 for [2,4)
+#' # HR=0.5 for (0,1], HR=0.8 after 1 (hr[2] covers (0,1], hr[3] covers (1,2])
 #' td_dist3 <- apply_td_hr(dist1, 0:3, c(0.5, 0.5, 0.8, 0.8))
-#' join_dist <- join(apply_hr(dist1, 0.5), 2, apply_hr(dist1, 0.8))
+#' join_dist <- join(apply_hr(dist1, 0.5), 1, apply_hr(dist1, 0.8))
 #' test_times <- c(0, 0.5, 1, 1.5, 2, 2.5, 3)
 #' expect_equal(
 #'  surv_prob(td_dist3, test_times),
@@ -219,9 +260,9 @@ apply_td_hr <- function(dist, time, hr, log_hr = FALSE) {
 #'  tolerance = 1e-10
 #' )
 #'
-#' # Multiple HR transitions: HR=0.5 for [0,2), HR=1.0 for [2,4), HR=1.5 for [4,6)
+#' # Multiple HR transitions: HR=0.5 for (0,1], HR=1.0 for (1,3], HR=1.5 after 3
 #' td_dist4 <- apply_td_hr(dist1, 0:5, c(0.5, 0.5, 1.0, 1.0, 1.5, 1.5))
-#' join_dist2 <- join(apply_hr(dist1, 0.5), 2, apply_hr(dist1, 1.0), 4, apply_hr(dist1, 1.5))
+#' join_dist2 <- join(apply_hr(dist1, 0.5), 1, apply_hr(dist1, 1.0), 3, apply_hr(dist1, 1.5))
 #' test_times2 <- c(0, 1, 2, 3, 4, 5)
 #' expect_equal(
 #'  surv_prob(td_dist4, test_times2),
@@ -232,7 +273,7 @@ apply_td_hr <- function(dist, time, hr, log_hr = FALSE) {
 #' # Non-exponential: Weibull distribution
 #' dist_weib <- define_surv_param("weibull", shape = 1.5, scale = 10)
 #' td_weib <- apply_td_hr(dist_weib, 0:3, c(0.5, 0.5, 0.8, 0.8))
-#' join_weib <- join(apply_hr(dist_weib, 0.5), 2, apply_hr(dist_weib, 0.8))
+#' join_weib <- join(apply_hr(dist_weib, 0.5), 1, apply_hr(dist_weib, 0.8))
 #' expect_equal(
 #'  surv_prob(td_weib, test_times),
 #'  surv_prob(join_weib, test_times),
@@ -242,7 +283,7 @@ apply_td_hr <- function(dist, time, hr, log_hr = FALSE) {
 #' # Composite baseline: apply_hr on top of existing surv_ph
 #' dist_ph <- apply_hr(dist1, 0.7)
 #' td_composite <- apply_td_hr(dist_ph, 0:3, c(0.5, 0.5, 0.8, 0.8))
-#' join_composite <- join(apply_hr(dist_ph, 0.5), 2, apply_hr(dist_ph, 0.8))
+#' join_composite <- join(apply_hr(dist_ph, 0.5), 1, apply_hr(dist_ph, 0.8))
 #' expect_equal(
 #'  surv_prob(td_composite, test_times),
 #'  surv_prob(join_composite, test_times),
@@ -253,7 +294,7 @@ apply_td_hr <- function(dist, time, hr, log_hr = FALSE) {
 #'
 #' # Test: sparse stored times, queries fall between them
 #' td_sparse <- apply_td_hr(dist1, c(0, 2, 4), c(0.5, 0.8, 1.0))
-#' join_sparse <- join(apply_hr(dist1, 0.5), 2, apply_hr(dist1, 0.8), 4, apply_hr(dist1, 1.0))
+#' join_sparse <- join(apply_hr(dist1, 0.8), 2, apply_hr(dist1, 1.0))
 #' expect_equal(
 #'  surv_prob(td_sparse, c(0, 1, 2, 3, 4)),
 #'  surv_prob(join_sparse, c(0, 1, 2, 3, 4)),
@@ -269,7 +310,7 @@ apply_td_hr <- function(dist, time, hr, log_hr = FALSE) {
 #'
 #' # Test: sparse stored, dense queries
 #' td_dense <- apply_td_hr(dist1, c(0, 5, 10), c(0.5, 0.8, 1.0))
-#' join_dense <- join(apply_hr(dist1, 0.5), 5, apply_hr(dist1, 0.8), 10, apply_hr(dist1, 1.0))
+#' join_dense <- join(apply_hr(dist1, 0.8), 5, apply_hr(dist1, 1.0))
 #' expect_equal(
 #'  surv_prob(td_dense, seq(0, 10, by = 0.5)),
 #'  surv_prob(join_dense, seq(0, 10, by = 0.5)),
@@ -279,7 +320,7 @@ apply_td_hr <- function(dist, time, hr, log_hr = FALSE) {
 #' # Test: Weibull with non-aligned times
 #' dist_weib2 <- define_surv_param("weibull", shape = 1.5, scale = 10)
 #' td_weib2 <- apply_td_hr(dist_weib2, c(0, 2, 5), c(0.5, 0.8, 1.2))
-#' join_weib2 <- join(apply_hr(dist_weib2, 0.5), 2, apply_hr(dist_weib2, 0.8), 5, apply_hr(dist_weib2, 1.2))
+#' join_weib2 <- join(apply_hr(dist_weib2, 0.8), 2, apply_hr(dist_weib2, 1.2))
 #' expect_equal(
 #'  surv_prob(td_weib2, c(0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5)),
 #'  surv_prob(join_weib2, c(0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5)),
@@ -293,14 +334,18 @@ apply_td_hr <- function(dist, time, hr, log_hr = FALSE) {
 surv_prob.surv_td_ph <- function(x, time, ...) {
     check_times(time, 'calculating survival probabilities', 'time')
 
-    # Get baseline log-survival at stored time points
-    log_surv_stored <- log(surv_prob(x$dist, x$time, ...))
+    # Interval starts: hr[i] applies from the previous stored time
+    iv <- td_hr_intervals(x)
+
+    # Get baseline log-survival at the interval starts
+    log_surv_stored <- log(surv_prob(x$dist, iv$start, ...))
 
     # Get baseline log-survival at query times
     log_surv_query <- log(surv_prob(x$dist, time, ...))
 
-    # Call Rcpp function for efficient computation
-    compute_td_surv_prob(time, x$time, x$hr, log_surv_stored, log_surv_query)
+    # Call Rcpp function for efficient computation (each query time is
+    # evaluated independently, so query times need not be sorted)
+    compute_td_surv_prob(time, iv$start, iv$hr, log_surv_stored, log_surv_query)
 }
 
 #' @export
@@ -329,41 +374,43 @@ surv_prob.surv_td_ph <- function(x, time, ...) {
 surv_quantile.surv_td_ph <- function(x, probs, ...) {
     check_probs(probs)
 
-    # Compute S_td at each stored time point
-    stored_surv <- surv_prob(x, x$time, ...)
+    # Interval starts: hr[k] applies from start[k] to start[k + 1]
+    iv <- td_hr_intervals(x)
+    start <- iv$start
+    hr <- iv$hr
+    n <- length(start)
+
+    # Compute S_td at each interval start
+    stored_surv <- surv_prob(x, start, ...)
 
     vapply(probs, function(p) {
         if (p == 1) return(0)
         if (p == 0) return(Inf)
 
-        # Find interval where S_td crosses p
-        n <- length(x$time)
-
-        # If p >= S_td(t_1), it's before the first stored time
+        # If p >= S_td(start_1), it's before the first interval start
         if (p >= stored_surv[1]) {
-            # In interval [0, t_1) with hr[1]
-            if (x$hr[1] == 0) return(Inf)
-            p_base <- p^(1/x$hr[1])
+            if (hr[1] == 0) return(Inf)
+            p_base <- p^(1/hr[1])
             return(surv_quantile(x$dist, p_base, ...))
         }
 
         # Find the interval
         for (k in seq_len(n - 1)) {
             if (p >= stored_surv[k + 1]) {
-                # p is in interval [t_k, t_{k+1}), where hr[k] applies
-                if (x$hr[k] == 0) next
+                # p is in interval [start_k, start_{k+1}), where hr[k] applies
+                if (hr[k] == 0) next
                 # S_td(t) = S_td(t_k) * (S_base(t)/S_base(t_k))^hr_k
                 # Invert: S_base(t) = S_base(t_k) * (p/S_td(t_k))^(1/hr_k)
-                s_base_at_tk <- surv_prob(x$dist, x$time[k], ...)
-                p_base <- s_base_at_tk * (p / stored_surv[k])^(1/x$hr[k])
+                s_base_at_tk <- surv_prob(x$dist, start[k], ...)
+                p_base <- s_base_at_tk * (p / stored_surv[k])^(1/hr[k])
                 return(surv_quantile(x$dist, p_base, ...))
             }
         }
 
-        # Extrapolate beyond last stored time with last HR
-        if (x$hr[n] == 0) return(Inf)
-        s_base_at_tn <- surv_prob(x$dist, x$time[n], ...)
-        p_base <- s_base_at_tn * (p / stored_surv[n])^(1/x$hr[n])
+        # Extrapolate beyond the last interval start with the last HR
+        if (hr[n] == 0) return(Inf)
+        s_base_at_tn <- surv_prob(x$dist, start[n], ...)
+        p_base <- s_base_at_tn * (p / stored_surv[n])^(1/hr[n])
         surv_quantile(x$dist, p_base, ...)
     }, numeric(1))
 }
@@ -391,4 +438,15 @@ print.surv_td_ph <- function(x, ...) {
         collapse = '\n'
     )
     cat(output)
+}
+
+# Intervals of a time-dependent hazard ratio: hr[i] applies on
+# (time[i - 1], time[i]] with time[0] = 0, so interval i starts at time[i - 1].
+# Of several intervals sharing a start, all but the last have zero length and
+# are dropped; the last interval always remains.
+td_hr_intervals <- function(x) {
+    n <- length(x$time)
+    start <- c(0, x$time[-n])
+    keep <- !duplicated(start, fromLast = TRUE)
+    list(start = start[keep], hr = x$hr[keep])
 }

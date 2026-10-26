@@ -35,6 +35,19 @@
 #'  'Predictions will reflect weighted average of predictions for subjects used to fit model.',
 #'  fixed = T
 #' )
+#'
+#' # covariate predictions keep the requested length and order
+#' expect_length(suppressWarnings(surv_prob(surv_dist3, c(1, 1, 2))), 3)
+#' expect_equal(
+#'  suppressWarnings(surv_prob(surv_dist3, c(3, 1, 2))),
+#'  suppressWarnings(surv_prob(surv_dist3, c(1, 2, 3)))[c(3, 1, 2)],
+#'  tolerance = 1e-10
+#' )
+#'
+#' # the covariate warning message does not end in "FALSE"
+#' warn_msg <- tryCatch(surv_prob(surv_dist3, 1), warning = function(w) conditionMessage(w))
+#' expect_false(grepl('FALSE$', warn_msg))
+#'
 surv_prob.flexsurvreg <- function(x, time,  ...) {
 
   # Check survival times
@@ -51,7 +64,7 @@ surv_prob.flexsurvreg <- function(x, time,  ...) {
 
   if(x$ncovs > 0 && is.null(dots$covar)) {
     msg <- get_and_populate_message('model_no_covariates')
-    warning(msg, show_call_warn())
+    warning(msg, call. = show_call_warn())
   }
 
   # For efficiency, survival probabilities are only calculated
@@ -90,13 +103,16 @@ surv_prob.flexsurvreg <- function(x, time,  ...) {
   surv_df <- data %>%
     slice(rep(seq_len(n_obs), each = n_time))
   surv_df$t <- rep(time_surv, n_obs)
+  # Position of each requested time, so results keep the requested order and
+  # length even when times are unsorted or repeated
+  surv_df$pos <- rep(seq_len(n_time), n_obs)
   surv_df$value <- do.call(x$dfns$p, fncall)
 
-  # Join to the full data, then summarize over times.
+  # Join to the full data, then summarize over each requested time.
   if(x$ncovs > 0) {
     surv_df <- surv_df %>%
       left_join(data_full, by = colnames(data), relationship = 'many-to-many') %>%
-      group_by(t) %>%
+      group_by(.data$pos) %>%
       summarize(value = mean(.data$value))
   }
 

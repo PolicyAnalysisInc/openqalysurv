@@ -2,7 +2,7 @@
 
 # File R/max_hazards.r: @tests
 
-test_that("Function max_hazards() @ L71", {
+test_that("Function max_hazards() @ L75", {
   dist1 <- define_surv_param("exp", rate = 0.01)
   dist2 <- define_surv_param("exp", rate = 0.02)
   dist3 <- define_surv_param("weibull", shape = 1.5, scale = 50)
@@ -50,7 +50,7 @@ test_that("Function max_hazards() @ L71", {
 })
 
 
-test_that("Function surv_prob.surv_max_haz() @ L119", {
+test_that("Function surv_prob.surv_max_haz() @ L136", {
   # Two exponentials: max_hazards(exp(0.01), exp(0.02)) ~ exp(0.02)
   dist1 <- define_surv_param("exp", rate = 0.01)
   dist2 <- define_surv_param("exp", rate = 0.02)
@@ -66,10 +66,23 @@ test_that("Function surv_prob.surv_max_haz() @ L119", {
   expect_equal(surv_prob(mh, 0), 1)
   s_vals <- surv_prob(mh, 0:100)
   expect_true(all(diff(s_vals) <= 0))
+  
+  # The value at t does not depend on which other times are queried, and
+  # query times need not be sorted or unique
+  mh_cross <- max_hazards(define_surv_param("exp", rate = 0.1),
+                          define_surv_param("weibull", shape = 2, scale = 10))
+  expect_equal(surv_prob(mh_cross, c(5, 10))[2], surv_prob(mh_cross, 10), tolerance = 1e-6)
+  expect_equal(
+   surv_prob(mh_cross, c(10, 3, 10, 0)),
+   c(surv_prob(mh_cross, 10), surv_prob(mh_cross, 3), surv_prob(mh_cross, 10), 1)
+  )
+  
+  # The hazards cross at t = 5, so S(10) = exp(-(0.5 + 0.75)) up to the grid step
+  expect_equal(surv_prob(mh_cross, 10), exp(-1.25), tolerance = 1e-3)
 })
 
 
-test_that("Function surv_quantile.surv_max_haz() @ L192", {
+test_that("Function surv_quantile.surv_max_haz() @ L193", {
   dist1 <- define_surv_param("exp", rate = 0.01)
   dist2 <- define_surv_param("exp", rate = 0.02)
   mh <- max_hazards(dist1, dist2)
@@ -85,7 +98,7 @@ test_that("Function surv_quantile.surv_max_haz() @ L192", {
 })
 
 
-test_that("Function print.surv_max_haz() @ L228", {
+test_that("Function print.surv_max_haz() @ L229", {
   dist1 <- define_surv_param("exp", rate = 0.01)
   dist2 <- define_surv_param("exp", rate = 0.02)
   expect_output(

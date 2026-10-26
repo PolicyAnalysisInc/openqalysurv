@@ -2,7 +2,7 @@
 
 # File R/surv_survfit.r: @tests
 
-test_that("Function surv_prob.survfit() @ L31", {
+test_that("Function surv_prob.survfit() @ L38", {
   sf1 <- survfit(Surv(rectime, censrec)~1, data = flexsurv::bc)
   sf2 <- survfit(Surv(time, flag)~1, data = data.frame(time = c(2,5), flag = c(1,1)))
   expect_equal(
@@ -29,6 +29,13 @@ test_that("Function surv_prob.survfit() @ L31", {
    surv_prob(sf2, c(0, 1000, 2000, 3000)),
    'Predictions will reflect weighted average of predictions for subjects used to fit model.',
    fixed = TRUE
+  )
+  # strata predictions keep the requested length and order
+  expect_length(suppressWarnings(surv_prob(sf2, c(2000, 1000, 2000))), 3)
+  expect_equal(
+   suppressWarnings(surv_prob(sf2, c(2000, 1000, 2000))),
+   suppressWarnings(surv_prob(sf2, c(1000, 2000)))[c(2, 1, 2)],
+   tolerance = 1e-10
   )
 })
 

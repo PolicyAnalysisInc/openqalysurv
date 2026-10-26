@@ -41,7 +41,7 @@ plot.surv_dist <- function(x, max_time, steps = 1000, ...) {
     )
 
     df[!is.na(df$survival), ]
-    ggplot(aes(x = time, y = survival), data = df) +
+    ggplot(aes(x = .data$time, y = .data$survival), data = df) +
         geom_line() +
         coord_cartesian(xlim = c(0, max_time), ylim = c(0, 1)) +
         labs(x = 'Time', y = 'Survival')

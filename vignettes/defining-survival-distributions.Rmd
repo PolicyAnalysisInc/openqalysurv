@@ -22,7 +22,7 @@ The openqalysurv package provides functions for defining a wide variety of survi
 
 ## Parametric
 
-The `define_surv_param` function allows you to define a parametric survival model with specified distribution and parameter values. Parameterization is based on the [flexsurv](https://cran.r-project.org/web/packages/flexsurv/index.html) package.
+The `define_surv_param` function allows you to define a parametric survival model with specified distribution and parameter values. Parameterization is based on the [flexsurv](https://CRAN.R-project.org/package=flexsurv) package.
 
 ```{r}
   param_surv <- define_surv_param('weibull', shape = 1.2, scale = 5.3)

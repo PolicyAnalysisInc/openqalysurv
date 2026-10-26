@@ -11,7 +11,7 @@
 #' default, these columns are assumed to be named `time` and `survival`, but
 #' these can be configured by via the optional parameters.
 #' @param time_col the name of the time column (defaults to `time`)
-#' @param surv_col the name of the time column (defaults to `survival`)
+#' @param surv_col the name of the survival column (defaults to `survival`)
 #'
 #' @return a `surv_km` object.
 #'
@@ -259,6 +259,15 @@ print.surv_km <- function(x, ...) {
     cat('A Kaplan-Meier distribution:', tibble_output, sep = '\n')
 }
 
+#' Define Survival Table Distribution
+#'
+#' Another name for [define_surv_km()]: a survival distribution from a table
+#' of times and survival probabilities.
+#'
+#' @inheritParams define_surv_km
+#'
+#' @return a `surv_km` object.
+#'
 #' @export
 #'
 #' @tests
@@ -336,7 +345,7 @@ surv_prob.surv_km <- function(x, time, ...) {
 #' expect_s3_class(p, "ggplot")
 plot.surv_km <- function(x, max_time, steps = 1000, ...) {
     df <- x$table
-    ggplot(aes(x = time, y = survival), data = df) +
+    ggplot(aes(x = .data$time, y = .data$survival), data = df) +
         geom_step() +
         coord_cartesian(xlim = c(0, max_time), ylim = c(0, 1)) +
         labs(x = 'Time', y = 'Survival')

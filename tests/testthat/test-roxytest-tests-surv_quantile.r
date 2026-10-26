@@ -47,9 +47,21 @@ test_that("Function check_probs() @ L78", {
 })
 
 
-test_that("Function find_search_upper() @ L93", {
+test_that("Function find_search_upper() @ L105", {
   dist1 <- define_surv_param('exp', rate = 0.05)
   expect_true(is.finite(find_search_upper(dist1, 0.5)))
   expect_true(surv_prob(dist1, find_search_upper(dist1, 0.01)) < 0.01)
+  
+  # A Kaplan-Meier quantile is the first time S <= p, and Inf when S never
+  # reaches p within follow-up
+  sf_bc <- survival::survfit(survival::Surv(recyrs, censrec) ~ 1, data = flexsurv::bc)
+  q_median <- surv_quantile(sf_bc, 0.5)
+  expect_true(is.finite(q_median))
+  expect_equal(q_median, min(sf_bc$time[sf_bc$surv <= 0.5]), tolerance = 1e-4)
+  expect_equal(surv_quantile(sf_bc, 0.01), Inf)
+  
+  # Stratified fits search only up to the last time every stratum covers
+  sf_strata <- survival::survfit(survival::Surv(recyrs, censrec) ~ group, data = flexsurv::bc)
+  expect_true(is.finite(surv_quantile(sf_strata, 0.5)))
 })
 
